@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stellar Stories Flipbook</title>
+  <style>
+    :root { --w: 720px; --h: 480px; --bg: #f5f5f7; --paper: #fff; --ink:#111; --accent:#0ea5e9; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.4 system-ui, sans-serif; background: var(--bg); color: var(--ink); display: grid; place-items: center; min-height: 100vh; padding: 20px; }
+    .wrap { display: grid; gap: 12px; }
+    .controls { display:flex; gap:8px; justify-content:center; align-items:center; }
+    button { border: 0; padding: 10px 14px; border-radius: 10px; background: #e5e7eb; cursor: pointer; font-weight: 600; }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .stage { position: relative; width: min(100vw - 32px, var(--w)); aspect-ratio: 3/2; perspective: 2000px; background: transparent; }
+    .paper { position:absolute; inset:0; transform-style: preserve-3d; transition: transform 650ms cubic-bezier(.2,.6,.2,1); }
+    .paper.turned { transform: rotateY(-180deg); }
+    .face { position:absolute; inset:0; backface-visibility: hidden; overflow:hidden; }
+    .content { position:absolute; top:0; bottom:0; width:50%; background: var(--paper); box-shadow: 0 6px 20px rgba(0,0,0,.12); overflow:auto; padding:24px; }
+    .front .content { right:0; transform: translateZ(1px); }
+    .back { transform: rotateY(180deg); }
+    .back .content { left:0; }
+    .hotzones { position:absolute; inset:0; display:grid; grid-template-columns: 1fr 1fr; }
+    .hotzones > div { pointer-events:auto; }
+    .hotzones .prev { cursor:w-resize; }
+    .hotzones .next { cursor:e-resize; }
+  </style>
+</head>
+<body>
+  <div class="wrap" aria-label="Flipbook">
+    <div class="stage" id="stage">
+      <div class="hotzones" aria-hidden="true">
+        <div class="prev" id="tapPrev"></div>
+        <div class="next" id="tapNext"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="prev">⟵ Prev</button>
+      <span id="status"></span>
+      <button id="next">Next ⟶</button>
+    </div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // Adapted for NASA Space Apps 2025 challenge "Stellar Stories"
+    const PAGES = [
+      { title:"Cover", html:`<h1>Stellar Stories</h1><p>Space Weather Through the Eyes of Earthlings</p><p><em>Image placeholder: cover illustration of Sun and Earth connected by light</em></p>` },
+      { title:"What is Space Weather?", html:`<h2>Definition</h2><p>Space weather means the Sun's activity—like flares and storms—that affects space and Earth. Though the Sun is 93 million miles away, its energy reaches us and changes our daily lives.</p><p><em>Image placeholder: diagram of solar flare reaching Earth</em></p>` },
+      { title:"Farmer's Story", html:`<h2>The Farmer</h2><p>A farmer uses a drone to watch crops. One day, the drone lost signal because of a solar storm. The farmer had to rely on walking the fields instead.</p><a href="https://scratch.mit.edu/projects/10128407" target="_blank">Help the farmer in Scratch</a><p><em>Image placeholder: farmer looking up at a buzzing drone</em></p>` },
+      { title:"Pilot's Story", html:`<h2>The Pilot</h2><p>A pilot flying at night noticed the radio went quiet. Space weather can block signals, making flights harder to guide safely.</p><p><em>Image placeholder: airplane cockpit with dark skies and aurora outside</em></p>` },
+      { title:"Astronaut's Story", html:`<h2>The Astronaut</h2><p>Astronauts in orbit see Earth’s glow but must shelter when solar storms hit, because radiation is dangerous in space.</p><p><em>Image placeholder: astronaut viewing aurora from space station window</em></p>` },
+      { title:"Kid's Imagination", html:`<h2>The Student</h2><p>Back in class, a kid learns about space weather. Looking out the window, they imagine: What if I became a solar flare?</p><p><em>Image placeholder: child by window with sunbeam across desk</em></p>` },
+      { title:"Solar Flare's View", html:`<h2>Becoming a Flare</h2><p>The child imagines racing as plasma, bursting with light, crossing space toward Earth. The flare wonders: who will I touch? A farmer, a pilot, a satellite?</p><p><em>Image placeholder: artistic wave of light racing across solar system</em></p>` },
+      { title:"Interactive", html:`<h2>Play and Learn</h2><p>Space weather can be explored through games and creativity.</p><a href="#" onclick="window.open('https://www.roblox.com/discover/#!/search/obby%20solar%20flare','_blank'); return false;">Try a Roblox Obby</a><p><em>Image placeholder: screenshot mock-up of a Roblox obby about space storms</em></p>` },
+      { title:"Closing", html:`<h2>Our Story</h2><p>From farmers to astronauts, space weather affects everyone. We are all part of Earth’s stellar story, learning together how to live with the Sun’s moods.</p><p><em>Image placeholder: group of diverse people looking at the sky with aurora</em></p>` },
+    ];
+
+    const stage = document.getElementById('stage');
+    const totalPages = PAGES.length;
+    const totalSheets = Math.ceil(totalPages / 2);
+    const papers = [];
+
+    for (let s = 0; s < totalSheets; s++) {
+      const rightIndex = s * 2;
+      const leftIndex  = rightIndex + 1;
+      const paper = document.createElement('section');
+      paper.className = 'paper';
+      paper.style.zIndex = String(totalSheets - s);
+      const front = document.createElement('div');
+      front.className = 'face front';
+      front.appendChild(makeContent('right', rightIndex));
+      const back = document.createElement('div');
+      back.className = 'face back';
+      back.appendChild(makeContent('left', leftIndex));
+      paper.appendChild(front);
+      paper.appendChild(back);
+      stage.appendChild(paper);
+      papers.push(paper);
+    }
+
+    function makeContent(side, index){
+      const content = document.createElement('article');
+      content.className = 'content';
+      if (index >= totalPages) { content.innerHTML = ''; return content; }
+      content.setAttribute('role','region');
+      content.setAttribute('aria-label', `Page ${index+1}: ${PAGES[index].title}`);
+      content.innerHTML = `<h1>${escapeHtml(PAGES[index].title)}</h1>` + PAGES[index].html;
+      return content;
+    }
+
+    function escapeHtml(s){
+      const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'};
+      return String(s).replace(/[&<>\"]+/g, c => map[c]);
+    }
+
+    let current = 0;
+    function clamp(n, min, max){ return Math.min(Math.max(n, min), max); }
+    function setPage(p){
+      current = clamp(p, 0, totalPages - 1);
+      const sheetIndex = Math.floor(current / 2);
+      papers.forEach((paper, i) => paper.classList.toggle('turned', i < sheetIndex));
+      papers.forEach((paper, i) => { paper.style.zIndex = i < sheetIndex ? String(100 + i) : String(100 - i); });
+      updateStatus();
+    }
+    function next(){ setPage(current + 1); }
+    function prev(){ setPage(current - 1); }
+    function updateStatus(){ document.getElementById('status').textContent = `Page ${current+1} / ${totalPages}`; }
+
+    document.getElementById('next').addEventListener('click', next);
+    document.getElementById('prev').addEventListener('click', prev);
+    document.getElementById('tapNext').addEventListener('click', next);
+    document.getElementById('tapPrev').addEventListener('click', prev);
+
+    addEventListener('keydown', (e)=>{
+      if (e.key === 'ArrowRight') next();
+      else if (e.key === 'ArrowLeft') prev();
+    });
+
+    setPage(0);
+  </script>
+</body>
+</html>
