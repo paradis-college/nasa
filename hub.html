@@ -90,25 +90,29 @@
     /* --- CALENDAR --- */
     .cal-wrap{margin-top:14px;background:color-mix(in oklab,var(--card) 92%, transparent);border:1px solid color-mix(in oklab,var(--muted) 25%, transparent);
       border-radius:var(--radius);padding:16px; box-shadow: var(--shadow)}
-    .cal-head{display:flex;align-items:center;gap:12px}
+    .cal-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
     .cal-head h3{margin:0}
-    .cal-head .sp{flex:1}
+    .cal-head .sp{flex:1;min-width:20px}
     .cal-grid{margin-top:10px;display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
     .dow,.day{padding:10px;border-radius:16px;background:color-mix(in oklab,var(--card) 80%, transparent);border:1px solid color-mix(in oklab,var(--muted) 16%, transparent)}
     .dow{font-size:.88rem;color:var(--muted);text-align:center;font-weight:800}
-    .day{min-height:105px;position:relative}
-    .day .num{font-weight:900;font-size:1rem}
-    .badge{margin-top:8px;display:inline-block;font-size:.78rem;padding:6px 8px;border-radius:999px;border:2px solid transparent;cursor:pointer;font-weight:800}
-    .badge:hover{outline:var(--ring)}
-    .b-FLR{background:color-mix(in oklab,var(--pop3) 24%, transparent); border-color: color-mix(in oklab,var(--pop3) 50%, transparent)}
-    .b-CME{background:color-mix(in oklab,var(--pop4) 24%, transparent); border-color: color-mix(in oklab,var(--pop4) 50%, transparent)}
-    .b-GST{background:color-mix(in oklab,var(--pop2) 24%, transparent); border-color: color-mix(in oklab,var(--pop2) 50%, transparent)}
-    .b-RBE{background:color-mix(in oklab,var(--danger) 20%, transparent); border-color: color-mix(in oklab,var(--danger) 45%, transparent)}
-    .b-SEP{background:color-mix(in oklab,var(--pop1) 24%, transparent); border-color: color-mix(in oklab,var(--pop1) 50%, transparent)}
-    .b-HSS{background:color-mix(in oklab,var(--muted) 24%, transparent); border-color: color-mix(in oklab,var(--muted) 50%, transparent)}
-    .b-WSA{background:color-mix(in oklab,var(--pop1) 18%, transparent); border-color: color-mix(in oklab,var(--pop1) 40%, transparent)}
-    .b-NTF{background:color-mix(in oklab,var(--pop4) 18%, transparent); border-color: color-mix(in oklab,var(--pop4) 40%, transparent)}
+    .day{min-height:120px;position:relative;transition:all .2s ease}
+    .day:hover{border-color:color-mix(in oklab,var(--pop1) 40%, transparent);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+    .day .num{font-weight:900;font-size:1.1rem;margin-bottom:6px;display:block}
+    .badge{margin-top:6px;margin-right:4px;display:inline-block;font-size:.72rem;padding:5px 8px;border-radius:8px;border:2px solid transparent;cursor:pointer;font-weight:800;transition:transform .15s ease}
+    .badge:hover{outline:var(--ring);transform:scale(1.05)}
+    .b-FLR{background:color-mix(in oklab,var(--pop3) 28%, transparent); border-color: color-mix(in oklab,var(--pop3) 55%, transparent)}
+    .b-CME{background:color-mix(in oklab,var(--pop4) 28%, transparent); border-color: color-mix(in oklab,var(--pop4) 55%, transparent)}
+    .b-GST{background:color-mix(in oklab,var(--pop2) 28%, transparent); border-color: color-mix(in oklab,var(--pop2) 55%, transparent)}
+    .b-RBE{background:color-mix(in oklab,var(--danger) 24%, transparent); border-color: color-mix(in oklab,var(--danger) 50%, transparent)}
+    .b-SEP{background:color-mix(in oklab,var(--pop1) 28%, transparent); border-color: color-mix(in oklab,var(--pop1) 55%, transparent)}
+    .b-HSS{background:color-mix(in oklab,var(--muted) 28%, transparent); border-color: color-mix(in oklab,var(--muted) 55%, transparent)}
+    .b-WSA{background:color-mix(in oklab,var(--pop1) 22%, transparent); border-color: color-mix(in oklab,var(--pop1) 45%, transparent)}
+    .b-NTF{background:color-mix(in oklab,var(--pop4) 22%, transparent); border-color: color-mix(in oklab,var(--pop4) 45%, transparent)}
     .no-events{color:var(--muted);font-size:.95rem}
+    .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;padding:12px;background:color-mix(in oklab,var(--card) 70%, transparent);border-radius:12px}
+    .legend-item{display:flex;align-items:center;gap:6px;font-size:.85rem}
+    .legend-icon{width:16px;height:16px;border-radius:4px;border:2px solid}
 
     /* --- MODAL --- */
     dialog{border:none;border-radius:20px;max-width:760px;width:95%;background:var(--card);color:var(--text);padding:0;box-shadow:0 40px 100px -30px rgba(0,0,0,.6)}
@@ -172,6 +176,40 @@
           <button class="btn" id="nextMonth" aria-label="Next month">▶</button>
         </div>
         <div class="cal-grid" id="calGrid"></div>
+        
+        <!-- Event Legend -->
+        <div class="legend">
+          <div style="font-weight:800;width:100%;margin-bottom:4px;color:var(--pop1)">📊 Event Types:</div>
+          <div class="legend-item">
+            <div class="legend-icon b-FLR"></div>
+            <span><strong>FLR</strong> - Solar Flare (affects radio)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-icon b-CME"></div>
+            <span><strong>CME</strong> - Coronal Mass Ejection</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-icon b-GST"></div>
+            <span><strong>GST</strong> - Geomagnetic Storm (affects power grids)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-icon b-RBE"></div>
+            <span><strong>RBE</strong> - Radio Blackout</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-icon b-SEP"></div>
+            <span><strong>SEP</strong> - Solar Energetic Particles (radiation)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-icon b-HSS"></div>
+            <span><strong>HSS</strong> - High Speed Solar Wind Stream</span>
+          </div>
+        </div>
+        
+        <!-- Quick Guide -->
+        <div style="margin-top:16px;padding:12px;background:color-mix(in oklab,var(--pop1) 8%, transparent);border-radius:12px;border-left:4px solid var(--pop1)">
+          <p style="font-size:.9rem;line-height:1.6;margin:0"><strong>💡 How to use:</strong> Click any event badge to see detailed information, including affected regions and impact predictions. Events are pulled from NASA's DONKI (Database Of Notifications, Knowledge, Information) system.</p>
+        </div>
       </div>
     </section>
   </main>
@@ -372,11 +410,18 @@
         let locationsHTML = '';
         const type = getType(e);
         
+        // Add NOAA imagery links
+        let noaaHTML = '<div style="margin:10px 0;padding:12px;background:rgba(124,244,255,0.08);border-radius:10px;border-left:3px solid var(--pop1)">';
+        noaaHTML += '<strong>📸 Real-Time NOAA Space Weather Imagery:</strong><ul style="margin-top:8px;line-height:1.8">';
+        
         if (type === 'FLR' || type === 'CME') {
           locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(124,244,255,0.1);border-radius:10px">
             <strong>🌍 Global Impact:</strong>
             <p>This event affects the entire sunlit side of Earth. Radio communications may be disrupted worldwide.</p>
           </div>`;
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/goes-x-ray-flux" target="_blank" style="color:var(--pop1)">GOES X-Ray Flux</a> - See solar flare intensity</li>';
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/solar-and-geophysical-activity-summary" target="_blank" style="color:var(--pop1)">Solar Activity Summary</a> - Daily event reports</li>';
+          noaaHTML += '<li><a href="https://sdo.gsfc.nasa.gov/data/" target="_blank" style="color:var(--pop1)">NASA SDO Imagery</a> - Solar Dynamics Observatory images</li>';
         } else if (type === 'GST' || e.kpIndex) {
           const kp = e.kpIndex || 5;
           let regions = '';
@@ -392,15 +437,29 @@
             <p>${regions}</p>
             <p style="margin-top:8px"><em>Best viewing: Dark, clear skies away from city lights.</em></p>
           </div>`;
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/aurora-30-minute-forecast" target="_blank" style="color:var(--pop2)">Aurora 30-Min Forecast</a> - Current aurora oval</li>';
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/planetary-k-index" target="_blank" style="color:var(--pop2)">Planetary Kp Index</a> - Geomagnetic activity level</li>';
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/station-k-and-indices" target="_blank" style="color:var(--pop2)">Magnetometer Data</a> - Ground-based measurements</li>';
         } else if (type === 'RBE') {
           locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(255,107,107,0.1);border-radius:10px">
             <strong>📡 Affected Regions:</strong>
             <p>Radio blackouts primarily affect high-frequency communications on the sunlit side of Earth. Aviation and maritime communications may be disrupted.</p>
           </div>`;
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/d-region-absorption-predictions" target="_blank" style="color:var(--danger)">D-RAP Predictions</a> - Radio absorption forecast</li>';
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/goes-x-ray-flux" target="_blank" style="color:var(--danger)">X-Ray Flux Monitor</a> - Flare intensity tracking</li>';
+        } else if (type === 'SEP') {
+          locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(178,141,255,0.1);border-radius:10px">
+            <strong>☢️ Radiation Hazard:</strong>
+            <p>Solar energetic particles pose radiation risks to astronauts, high-altitude aircraft, and satellites.</p>
+          </div>`;
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/solar-radiation-activity" target="_blank" style="color:var(--pop4)">Solar Radiation Activity</a> - Current particle flux</li>';
+          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/alerts-watches-and-warnings" target="_blank" style="color:var(--pop4)">Radiation Warnings</a> - Active alerts</li>';
         }
         
+        noaaHTML += '</ul></div>';
+        
         const kv = Object.entries(e).filter(([k])=>!k.startsWith('__'));
-        modalBody.innerHTML = locationsHTML + `<div style="display:grid;gap:8px">${kv.map(([k,v])=>`<div><strong>${k}</strong><div class=\"kbd\" style=\"overflow:auto\">${typeof v==='object'? `<pre style='margin:0'>${JSON.stringify(v,null,2)}</pre>`: String(v)}</div></div>`).join('')}</div>`;
+        modalBody.innerHTML = locationsHTML + noaaHTML + `<div style="display:grid;gap:8px;margin-top:10px">${kv.map(([k,v])=>`<div><strong>${k}</strong><div class=\"kbd\" style=\"overflow:auto\">${typeof v==='object'? `<pre style='margin:0'>${JSON.stringify(v,null,2)}</pre>`: String(v)}</div></div>`).join('')}</div>`;
       }
       modal.showModal();
     }
