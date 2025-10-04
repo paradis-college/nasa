@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SpaceWeatherSim</title>
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    /* --- Kid-friendly, gamey visual style --- */
+    :root{
+      --bg:#071225; --bg2:#0c1630; --card:#0f1e3a; --text:#e9f2ff; --muted:#9fb5e6;
+      --pop1:#7cf4ff; --pop2:#9CFF6E; --pop3:#FFD166; --pop4:#B28DFF; --danger:#ff6b6b;
+      --ring: 0 0 0 3px color-mix(in oklab, var(--pop1) 55%, transparent);
+      --shadow: 0 12px 40px -18px rgba(0,0,0,.6);
+      --radius: 22px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f0f6ff; --bg2:#e6f0ff; --card:#ffffff; --text:#091224; --muted:#5c6c8f;
+        --pop1:#0077ff; --pop2:#14c38e; --pop3:#ffb703; --pop4:#7b61ff; --danger:#e63b3b;
+        --shadow: 0 10px 34px -18px rgba(0,0,0,.2);
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Inter, "SF Pro Rounded", Arial, sans-serif; color:var(--text);
+      background:
+        radial-gradient(1200px 900px at 20% -10%, color-mix(in oklab,var(--pop4) 12%, transparent), transparent),
+        radial-gradient(1000px 700px at 120% 10%, color-mix(in oklab,var(--pop1) 10%, transparent), transparent),
+        conic-gradient(from 0deg at 10% -20%, color-mix(in oklab,var(--pop3) 6%, transparent), transparent 20%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
+      overflow-x:hidden;
+    }
+    /* twinkles */
+    .twinkle{position:fixed; inset:0; pointer-events:none; background:
+      radial-gradient(3px 3px at 10% 20%, #fff8, transparent 60%),
+      radial-gradient(2px 2px at 80% 30%, #fff5, transparent 60%),
+      radial-gradient(2px 2px at 30% 80%, #fff4, transparent 60%),
+      radial-gradient(1.8px 1.8px at 60% 60%, #fff6, transparent 60%);
+      animation: twinkle 6s linear infinite alternate;
+      mix-blend-mode: screen; opacity:.45
+    }
+    @keyframes twinkle{ from{ transform:translateY(0)} to{ transform:translateY(-8px)} }
+
+    .wrap{max-width:1100px;margin:auto;padding:22px}
+
+    /* --- NAV --- */
+    .nav{position:sticky; top:0; z-index:50; backdrop-filter:saturate(150%) blur(10px);
+      background: color-mix(in oklab, var(--bg) 75%, transparent);
+      border-bottom: 1px solid color-mix(in oklab, var(--muted) 22%, transparent)
+    }
+    .nav-inner{display:flex;align-items:center;gap:14px;min-height:74px}
+    .logo{width:44px;height:44px;border-radius:14px;background: conic-gradient(from 210deg,var(--pop1),var(--pop2),var(--pop3),var(--pop4),var(--pop1));
+      display:grid;place-items:center;color:#001b2a;font-weight:900; box-shadow: var(--shadow)}
+    .brand{font-weight:900;letter-spacing:.2px;font-size:1.15rem}
+    .spacer{flex:1}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{padding:12px 16px;border:2px solid color-mix(in oklab,var(--muted) 25%, transparent);border-radius:999px;
+      background:linear-gradient(180deg,color-mix(in oklab,var(--card) 90%, transparent),color-mix(in oklab,var(--card) 70%, transparent));
+      color:var(--text); font-weight:700; box-shadow: var(--shadow); transform:translateY(0); transition:transform .08s ease}
+    .tab:focus,.tab:hover{outline:var(--ring); transform:translateY(-1px)}
+    .tab[aria-current="page"]{border-color: color-mix(in oklab, var(--pop1) 60%, transparent)}
+
+    /* --- HEADINGS --- */
+    h1,h2,h3{margin:0 0 8px 0}
+    h2{font-size:1.6rem}
+
+    /* --- SECTIONS --- */
+    section{display:none;animation:fade .15s ease}
+    section.active{display:block}
+    @keyframes fade{from{opacity:.6;transform:translateY(2px)}to{opacity:1;transform:none}}
+
+    /* --- SIMULATOR GRID --- */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:14px}
+    .card{position:relative;isolation:isolate;background:linear-gradient(180deg,color-mix(in oklab,var(--card) 96%, transparent),color-mix(in oklab,var(--card) 70%, transparent));
+      border:1px solid color-mix(in oklab,var(--muted) 24%, transparent);border-radius:var(--radius);overflow:hidden;min-height:160px;display:flex;flex-direction:column; box-shadow: var(--shadow)}
+    .card .art{position:absolute;inset:0;z-index:0;opacity:.18;background:
+      radial-gradient(360px 180px at 85% 5%,var(--pop1),transparent),
+      radial-gradient(280px 160px at 10% 95%,var(--pop2),transparent)}
+    .card h3{margin:18px 18px 8px 18px}
+    .card p{margin:0 18px 14px 18px;color:var(--muted);font-size:.98rem}
+    .card .actions{margin:auto 18px 18px 18px}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;border:2px solid color-mix(in oklab,var(--muted) 25%, transparent);
+      background:linear-gradient(180deg,color-mix(in oklab,var(--card) 85%, transparent),color-mix(in oklab,var(--card) 60%, transparent)); cursor:pointer; font-weight:800}
+    .btn:focus,.btn:hover{outline:var(--ring); transform:translateY(-1px)}
+
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:2px dashed color-mix(in oklab,var(--muted) 40%, transparent); color:var(--muted); font-weight:700}
+
+    /* --- CALENDAR --- */
+    .cal-wrap{margin-top:14px;background:color-mix(in oklab,var(--card) 92%, transparent);border:1px solid color-mix(in oklab,var(--muted) 25%, transparent);
+      border-radius:var(--radius);padding:16px; box-shadow: var(--shadow)}
+    .cal-head{display:flex;align-items:center;gap:12px}
+    .cal-head h3{margin:0}
+    .cal-head .sp{flex:1}
+    .cal-grid{margin-top:10px;display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+    .dow,.day{padding:10px;border-radius:16px;background:color-mix(in oklab,var(--card) 80%, transparent);border:1px solid color-mix(in oklab,var(--muted) 16%, transparent)}
+    .dow{font-size:.88rem;color:var(--muted);text-align:center;font-weight:800}
+    .day{min-height:105px;position:relative}
+    .day .num{font-weight:900;font-size:1rem}
+    .badge{margin-top:8px;display:inline-block;font-size:.78rem;padding:6px 8px;border-radius:999px;border:2px solid transparent;cursor:pointer;font-weight:800}
+    .badge:hover{outline:var(--ring)}
+    .b-FLR{background:color-mix(in oklab,var(--pop3) 24%, transparent); border-color: color-mix(in oklab,var(--pop3) 50%, transparent)}
+    .b-CME{background:color-mix(in oklab,var(--pop4) 24%, transparent); border-color: color-mix(in oklab,var(--pop4) 50%, transparent)}
+    .b-GST{background:color-mix(in oklab,var(--pop2) 24%, transparent); border-color: color-mix(in oklab,var(--pop2) 50%, transparent)}
+    .b-RBE{background:color-mix(in oklab,var(--danger) 20%, transparent); border-color: color-mix(in oklab,var(--danger) 45%, transparent)}
+    .b-SEP{background:color-mix(in oklab,var(--pop1) 24%, transparent); border-color: color-mix(in oklab,var(--pop1) 50%, transparent)}
+    .b-HSS{background:color-mix(in oklab,var(--muted) 24%, transparent); border-color: color-mix(in oklab,var(--muted) 50%, transparent)}
+    .b-WSA{background:color-mix(in oklab,var(--pop1) 18%, transparent); border-color: color-mix(in oklab,var(--pop1) 40%, transparent)}
+    .b-NTF{background:color-mix(in oklab,var(--pop4) 18%, transparent); border-color: color-mix(in oklab,var(--pop4) 40%, transparent)}
+    .no-events{color:var(--muted);font-size:.95rem}
+
+    /* --- MODAL --- */
+    dialog{border:none;border-radius:20px;max-width:760px;width:95%;background:var(--card);color:var(--text);padding:0;box-shadow:0 40px 100px -30px rgba(0,0,0,.6)}
+    .modal-head{display:flex;align-items:center;gap:12px;padding:18px;border-bottom:1px solid color-mix(in oklab,var(--muted) 20%, transparent)}
+    .modal-body{padding:18px}
+    .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:18px;padding-top:0}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:color-mix(in oklab,var(--card) 60%, transparent);padding:6px 8px;border-radius:10px;border:1px solid color-mix(in oklab,var(--muted) 25%, transparent)}
+
+    /* --- ABOUT --- */
+    .about{display:grid;gap:12px}
+
+    /* fun emoji bullets */
+    .emoji{font-size:1.1rem}
+  </style>
+</head>
+<body>
+  <div class="twinkle" aria-hidden="true"></div>
+
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <div class="logo" aria-hidden="true">☼</div>
+      <div class="brand">SpaceWeatherSim</div>
+      <div class="spacer"></div>
+      <div class="tabs" role="tablist">
+        <a class="tab" id="tab-sim" href="#simulators" role="tab">Simulators</a>
+        <a class="tab" id="tab-about" href="#about" role="tab">About us</a>
+        <a class="tab" id="tab-cal" href="#calendar" role="tab">Calendar</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <!-- SIMULATORS -->
+    <section id="simulators" aria-labelledby="tab-sim">
+      <h2>Simulators</h2>
+      <p class="pill">Pick a tile to start your mission</p>
+      <div class="grid" id="sim-grid"></div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" aria-labelledby="tab-about">
+      <h2>About SpaceWeatherSim</h2>
+      <div class="about">
+        <p><span class="emoji">🎯</span> Learn space weather with quick missions and bright visuals.</p>
+        <p><span class="emoji">🧭</span> Three stops: <strong>Simulators</strong>, <strong>About us</strong>, <strong>Calendar</strong>.</p>
+        <p><span class="emoji">🧩</span> Works on phones and laptops. No installs. One single file.</p>
+        <p><span class="emoji">🎨</span> Friendly colors, rounded shapes, big buttons.</p>
+      </div>
+    </section>
+
+    <!-- CALENDAR (BETA) -->
+    <section id="calendar" aria-labelledby="tab-cal">
+      <div style="display:flex;align-items:center;gap:10px">
+        <h2 style="margin:0">Solar events calendar</h2>
+        <span class="pill" title="Work in progress">Beta</span>
+      </div>
+      <p class="no-events">Source: NASA DONKI (api.nasa.gov). Uses a default key and supports your own.</p>
+
+      <div class="cal-wrap">
+        <div class="cal-head">
+          <button class="btn" id="prevMonth" aria-label="Previous month">◀</button>
+          <h3 id="calTitle">Month YYYY</h3>
+          <div class="sp"></div>
+          <label style="display:flex;align-items:center;gap:8px">API key
+            <input id="nasaKey" class="kbd" style="min-width:220px"/>
+          </label>
+          <button class="btn" id="reload">Reload</button>
+          <button class="btn" id="nextMonth" aria-label="Next month">▶</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL -->
+  <dialog id="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle" style="margin:0">Event</h3>
+      <div class="spacer"></div>
+      <button class="btn" id="closeModal">Close</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <button class="btn" id="copyJSON">Copy JSON</button>
+    </div>
+  </dialog>
+
+  <script>
+    // --- Simple router ---
+    const sections = Array.from(document.querySelectorAll('main section'));
+    const tabs = {
+      simulators: document.getElementById('tab-sim'),
+      about: document.getElementById('tab-about'),
+      calendar: document.getElementById('tab-cal')
+    };
+    function route(){
+      const hash = location.hash.replace('#','') || 'simulators';
+      sections.forEach(s=>s.classList.toggle('active', s.id===hash));
+      Object.entries(tabs).forEach(([k,el])=>{
+        el.setAttribute('aria-current', (k===hash? 'page': 'false'));
+      });
+    }
+    window.addEventListener('hashchange', route);
+    route();
+
+    // --- Simulators grid (kid-friendly labels + emojis) ---
+    const sims = [
+      {key:'solar-flares', title:'Solar flares ☀️', desc:'See how flares get their class.'},
+      {key:'power-grid', title:'Power grid 🔌', desc:'Keep the lights on during storms.'},
+      {key:'aurora', title:'Aurora catchers 📸', desc:'Plan a glow-hunt by Kp index.'},
+      {key:'farmer-stories', title:'Farmer stories 🚜', desc:'Smart choices for healthy crops.'},
+      {key:'astronaut', title:'Astronaut 🧑\u200d🚀', desc:'Find the safe room in time.'},
+      {key:'radio', title:'Radio 📻', desc:'Reroute when HF goes quiet.'},
+    ];
+    const simGrid = document.getElementById('sim-grid');
+    simGrid.innerHTML = sims.map(s=>`
+      <article class="card">
+        <div class="art" aria-hidden="true"></div>
+        <h3>${s.title}</h3>
+        <p>${s.desc}</p>
+        <div class="actions"><a class="btn" href="#${s.key}">Play</a></div>
+      </article>
+    `).join('');
+
+    // --- Calendar ---
+    const calGrid = document.getElementById('calGrid');
+    const calTitle = document.getElementById('calTitle');
+    const nasaKeyInput = document.getElementById('nasaKey');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    // Default API key requested by user
+    const DEFAULT_KEY = 'o9FIZEgU2itrew0k9Y2qA9RhmeL49feU2B7fGZRR';
+    nasaKeyInput.value = DEFAULT_KEY;
+
+    let current = new Date();
+    current.setDate(1);
+
+    document.getElementById('prevMonth').onclick = ()=>{ current.setMonth(current.getMonth()-1); renderCalendar(); };
+    document.getElementById('nextMonth').onclick = ()=>{ current.setMonth(current.getMonth()+1); renderCalendar(); };
+    document.getElementById('reload').onclick = ()=> renderCalendar();
+    document.getElementById('closeModal').onclick = ()=> modal.close();
+    document.getElementById('copyJSON').onclick = ()=>{
+      const pre = modalBody.querySelector('pre');
+      if(pre){ navigator.clipboard.writeText(pre.innerText); }
+    };
+
+    const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+    async function renderCalendar(){
+      // header
+      const mo = current.toLocaleString(undefined,{month:'long'});
+      calTitle.textContent = `${mo} ${current.getFullYear()}`;
+
+      // grid header
+      calGrid.innerHTML = DOW.map(d=>`<div class=\"dow\">${d}</div>`).join('');
+
+      const firstDayIndex = (current.getDay()+6)%7; // Monday=0
+      const daysInMonth = new Date(current.getFullYear(), current.getMonth()+1, 0).getDate();
+
+      // placeholders for leading blanks
+      for(let i=0;i<firstDayIndex;i++) calGrid.insertAdjacentHTML('beforeend', `<div class=\"day\" aria-hidden=\"true\"></div>`);
+
+      // fetch NASA DONKI events for visible month + padding
+      const start = new Date(current.getFullYear(), current.getMonth(), 1);
+      const end   = new Date(current.getFullYear(), current.getMonth()+1, 7);
+      const key = nasaKeyInput.value.trim() || DEFAULT_KEY;
+
+      const all = await fetchDONKI(start,end,key);
+      const byDate = groupByDate(all);
+
+      for(let d=1; d<=daysInMonth; d++){
+        const date = new Date(current.getFullYear(), current.getMonth(), d);
+        const iso = date.toISOString().slice(0,10);
+        const evs = byDate.get(iso) || [];
+        const cell = document.createElement('div');
+        cell.className='day';
+        cell.innerHTML = `<div class=\"num\">${d}</div>`;
+        if(evs.length){
+          evs.slice(0,3).forEach(e=>{
+            const type = getType(e);
+            const b = document.createElement('button');
+            b.className='badge b-' + type;
+            b.textContent = labelFor(e);
+            b.title = 'Open details';
+            b.onclick = ()=> openEvent(e);
+            cell.appendChild(b);
+          });
+          if(evs.length>3){
+            const more = document.createElement('span');
+            more.className='badge b-NTF';
+            more.textContent = `+${evs.length-3} more`;
+            more.onclick = ()=> openEvent({__multi:true, items:evs});
+            cell.appendChild(more);
+          }
+        }
+        calGrid.appendChild(cell);
+      }
+
+      if(all.length===0){
+        const hint = document.createElement('p');
+        hint.className='no-events';
+        hint.textContent = 'No NASA DONKI items in range. Try other months or check your API key.';
+        calGrid.parentElement.appendChild(hint);
+        setTimeout(()=>hint.remove(), 5000);
+      }
+    }
+
+    function groupByDate(items){
+      const m = new Map();
+      for(const it of items){
+        const date = (it.eventDate || it.startTime || it.peakTime || it.beginTime || it.timeTag || it.startDate || it.publicationDate || it.messageIssueTime || it.activityID || '').toString();
+        const iso = (date.length>=10? date.slice(0,10) : (it.date || it.startTime || '').slice(0,10));
+        if(!iso) continue;
+        if(!m.has(iso)) m.set(iso,[]);
+        m.get(iso).push(it);
+      }
+      return m;
+    }
+
+    function getType(e){
+      if(e.classType || e.flrID) return 'FLR';
+      if(e.cmeAnalyses || e.cmeID) return 'CME';
+      if(e.kpIndex || e.gstID) return 'GST';
+      if(e.hssID) return 'HSS';
+      if(e.radioID || e.rbeID || e.impact) return 'RBE';
+      if(e.sepID) return 'SEP';
+      if(e.modelCompletionTime || e.modelInput || e.model) return 'WSA';
+      if(e.messageType) return 'NTF';
+      return 'NTF';
+    }
+
+    function labelFor(e){
+      if(e.classType) return `FLR ${e.classType}`; // e.g., M3.2
+      if(e.kpIndex) return `Kp ${e.kpIndex}`;
+      if(e.cmeAnalyses) return 'CME';
+      if(e.hssID) return 'HSS';
+      if(e.sepID) return 'SEP';
+      if(e.messageType) return e.messageType.replace('Report','').trim();
+      return 'Event';
+    }
+
+    function openEvent(e){
+      if(e.__multi){
+        modalTitle.textContent = `${e.items.length} events`;
+        modalBody.innerHTML = `<pre class=\"kbd\" style=\"white-space:pre-wrap;max-height:60vh;overflow:auto\">${JSON.stringify(e.items,null,2)}</pre>`;
+      }else{
+        const title = labelFor(e);
+        modalTitle.textContent = title;
+        const kv = Object.entries(e).filter(([k])=>!k.startsWith('__'));
+        modalBody.innerHTML = `<div style=\"display:grid;gap:8px\">${kv.map(([k,v])=>`<div><strong>${k}</strong><div class=\"kbd\" style=\"overflow:auto\">${typeof v==='object'? `<pre style='margin:0'>${JSON.stringify(v,null,2)}</pre>`: String(v)}</div></div>`).join('')}</div>`;
+      }
+      modal.showModal();
+    }
+
+    async function fetchDONKI(start, end, key){
+      const s = start.toISOString().slice(0,10);
+      const e = end.toISOString().slice(0,10);
+      const params = (u)=> u + (u.includes('?')?'&':'?') + new URLSearchParams({ startDate:s, endDate:e, api_key:key }).toString();
+
+      const urls = [
+        'https://api.nasa.gov/DONKI/FLR',           // Solar flares
+        'https://api.nasa.gov/DONKI/CME',           // Coronal Mass Ejections
+        'https://api.nasa.gov/DONKI/WSAEnlilSimulations', // WSA-Enlil simulations
+        'https://api.nasa.gov/DONKI/HSS',           // High Speed Streams
+        'https://api.nasa.gov/DONKI/GST',           // Geomagnetic Storms (Kp)
+        'https://api.nasa.gov/DONKI/RBE',           // Radio Blackout
+        'https://api.nasa.gov/DONKI/SEP',           // Solar Energetic Particles
+        'https://api.nasa.gov/DONKI/notifications'  // Text notifications
+      ].map(params);
+
+      const results = await Promise.allSettled(urls.map(u=>fetch(u).then(r=>r.ok?r.json():[])));
+      const items = [];
+      for(const r of results){ if(r.status==='fulfilled' && Array.isArray(r.value)) items.push(...r.value); }
+      return items;
+    }
+
+    // initial render
+    renderCalendar();
+  </script>
+</body>
+</html>
