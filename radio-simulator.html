@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Radio Communication Simulator</title>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --card: #1a2540;
+      --text: #e9f2ff;
+      --accent: #ff6b6b;
+      --border: rgba(255, 107, 107, 0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-rounded, system-ui, sans-serif;
+      background: linear-gradient(180deg, #0a0e1a, #2a1a1a);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: var(--accent);
+    }
+    .back-btn {
+      padding: 12px 24px;
+      background: rgba(255, 107, 107, 0.2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      background: rgba(255, 107, 107, 0.3);
+      transform: translateY(-2px);
+    }
+    .simulator {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .visualizer {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      min-height: 500px;
+    }
+    .radio-display {
+      width: 100%;
+      height: 400px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .radio-icon {
+      font-size: 120px;
+      filter: drop-shadow(0 0 20px var(--accent));
+    }
+    .signal-wave {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 3px solid var(--accent);
+      border-radius: 50%;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      animation: signal 1.5s ease-out infinite;
+    }
+    @keyframes signal {
+      0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+      }
+    }
+    .signal-wave:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+    .signal-wave:nth-child(3) {
+      animation-delay: 1s;
+    }
+    .frequency-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      height: 60px;
+      background: rgba(255, 107, 107, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      padding: 10px;
+    }
+    .freq-bar {
+      flex: 1;
+      background: var(--accent);
+      border-radius: 4px 4px 0 0;
+      min-height: 10px;
+      animation: bars 0.8s ease-in-out infinite;
+    }
+    .freq-bar:nth-child(1) { animation-delay: 0s; }
+    .freq-bar:nth-child(2) { animation-delay: 0.1s; }
+    .freq-bar:nth-child(3) { animation-delay: 0.2s; }
+    .freq-bar:nth-child(4) { animation-delay: 0.3s; }
+    .freq-bar:nth-child(5) { animation-delay: 0.4s; }
+    @keyframes bars {
+      0%, 100% { height: 10px; }
+      50% { height: 40px; }
+    }
+    .controls {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .control-group {
+      margin-bottom: 25px;
+    }
+    .control-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+    .control-group select,
+    .control-group input[type="range"] {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255, 107, 107, 0.1);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .control-group input[type="range"] {
+      height: 8px;
+      padding: 0;
+    }
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .value-display {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(255, 107, 107, 0.2);
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255, 107, 107, 0.1);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    @media (max-width: 768px) {
+      .simulator {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📻 Radio Communication Simulator</h1>
+      <a href="index.html" class="back-btn">← Back to Home</a>
+    </div>
+    
+    <div class="simulator">
+      <div class="visualizer">
+        <h2 style="margin-bottom: 20px;">HF Radio Signal</h2>
+        <div class="radio-display" id="radioDisplay">
+          <div class="signal-wave"></div>
+          <div class="signal-wave"></div>
+          <div class="signal-wave"></div>
+          <div class="radio-icon">📻</div>
+          <div class="frequency-bar" id="frequencyBar">
+            <div class="freq-bar"></div>
+            <div class="freq-bar"></div>
+            <div class="freq-bar"></div>
+            <div class="freq-bar"></div>
+            <div class="freq-bar"></div>
+          </div>
+        </div>
+        <div class="info">
+          <strong>Signal Status:</strong>
+          <p id="statusText">Clear communication on HF band</p>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <h3 style="margin-bottom: 20px; color: var(--accent);">Control Panel</h3>
+        
+        <div class="control-group">
+          <label for="frequency">Frequency Band</label>
+          <select id="frequency">
+            <option value="3">3-30 MHz (HF - Shortwave)</option>
+            <option value="30">30-300 MHz (VHF)</option>
+            <option value="300">300-3000 MHz (UHF)</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="ionospheric">Ionospheric Absorption</label>
+          <input type="range" id="ionospheric" min="0" max="100" value="10">
+          <div class="value-display" id="ionosphericValue">10%</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="solarFlare">Solar Flare Intensity</label>
+          <input type="range" id="solarFlare" min="0" max="10" value="0">
+          <div class="value-display" id="flareValue">None</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="signalStrength">Signal Strength (dB)</label>
+          <input type="range" id="signalStrength" min="-100" max="0" value="-30" disabled>
+          <div class="value-display" id="strengthValue">-30 dB</div>
+        </div>
+        
+        <div class="info" style="font-size: 0.85rem;">
+          <p><strong>HF Radio:</strong></p>
+          <p>Uses ionosphere reflection for long-distance communication. Vulnerable to space weather.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const frequency = document.getElementById('frequency');
+    const ionospheric = document.getElementById('ionospheric');
+    const solarFlare = document.getElementById('solarFlare');
+    const signalStrength = document.getElementById('signalStrength');
+    
+    const ionosphericValue = document.getElementById('ionosphericValue');
+    const flareValue = document.getElementById('flareValue');
+    const strengthValue = document.getElementById('strengthValue');
+    const statusText = document.getElementById('statusText');
+    const radioDisplay = document.getElementById('radioDisplay');
+    const frequencyBar = document.getElementById('frequencyBar');
+    
+    const flareNames = ['None', 'A', 'B', 'C', 'M1', 'M5', 'X1', 'X2', 'X5', 'X10', 'X20+'];
+    
+    function updateRadio() {
+      const freq = parseInt(frequency.value);
+      const iono = parseInt(ionospheric.value);
+      const flare = parseInt(solarFlare.value);
+      
+      ionosphericValue.textContent = iono + '%';
+      flareValue.textContent = flareNames[flare];
+      
+      // Calculate signal strength
+      let baseSignal = -20; // Good signal
+      
+      // HF is most affected by ionospheric conditions
+      if (freq === 3) {
+        baseSignal -= iono * 0.5;
+        baseSignal -= flare * 8;
+      } else if (freq === 30) {
+        baseSignal -= iono * 0.2;
+        baseSignal -= flare * 3;
+      } else {
+        baseSignal -= iono * 0.1;
+        baseSignal -= flare * 1;
+      }
+      
+      baseSignal = Math.max(-100, Math.min(0, baseSignal));
+      signalStrength.value = baseSignal;
+      strengthValue.textContent = baseSignal.toFixed(0) + ' dB';
+      
+      // Update visualization
+      const bars = frequencyBar.querySelectorAll('.freq-bar');
+      const signalQuality = (baseSignal + 100) / 100; // 0 to 1
+      
+      bars.forEach((bar, index) => {
+        if (signalQuality > 0.7) {
+          bar.style.background = '#9CFF6E';
+          bar.style.animationPlayState = 'running';
+        } else if (signalQuality > 0.4) {
+          bar.style.background = '#FFD166';
+          bar.style.animationPlayState = 'running';
+        } else {
+          bar.style.background = '#ff6b6b';
+          bar.style.animationPlayState = signalQuality > 0.2 ? 'running' : 'paused';
+          bar.style.height = '10px';
+        }
+      });
+      
+      // Update signal waves
+      const waves = radioDisplay.querySelectorAll('.signal-wave');
+      waves.forEach(wave => {
+        wave.style.display = signalQuality > 0.3 ? 'block' : 'none';
+        wave.style.borderColor = signalQuality > 0.7 ? '#9CFF6E' : signalQuality > 0.4 ? '#FFD166' : '#ff6b6b';
+      });
+      
+      // Status text
+      let status = '';
+      if (signalQuality > 0.7) {
+        status = 'Clear communication. Signal strong.';
+      } else if (signalQuality > 0.4) {
+        status = 'Moderate interference. Some static on the line.';
+      } else if (signalQuality > 0.2) {
+        status = 'High interference. Communication difficult.';
+      } else {
+        status = 'BLACKOUT! No signal. Find alternative frequency or wait for conditions to improve.';
+      }
+      
+      if (flare >= 7) {
+        status = 'RADIO BLACKOUT! Major X-class flare in progress!';
+      }
+      
+      statusText.textContent = status;
+    }
+    
+    frequency.addEventListener('change', updateRadio);
+    ionospheric.addEventListener('input', updateRadio);
+    solarFlare.addEventListener('input', updateRadio);
+    
+    updateRadio();
+  </script>
+</body>
+</html>

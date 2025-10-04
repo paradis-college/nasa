@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Astronaut Radiation Simulator</title>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --card: #1a2540;
+      --text: #e9f2ff;
+      --accent: #B28DFF;
+      --border: rgba(178, 141, 255, 0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-rounded, system-ui, sans-serif;
+      background: linear-gradient(180deg, #0a0e1a, #1a1035);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: var(--accent);
+    }
+    .back-btn {
+      padding: 12px 24px;
+      background: rgba(178, 141, 255, 0.2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      background: rgba(178, 141, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    .simulator {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .visualizer {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      min-height: 500px;
+    }
+    .station-display {
+      width: 100%;
+      height: 400px;
+      background: radial-gradient(circle at center, #1a1035 0%, #0a0e1a 100%);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .station {
+      width: 200px;
+      height: 200px;
+      background: linear-gradient(135deg, rgba(178, 141, 255, 0.3), rgba(124, 244, 255, 0.2));
+      border: 3px solid var(--accent);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      position: relative;
+      z-index: 2;
+    }
+    .radiation-wave {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border: 3px solid rgba(255, 107, 107, 0.5);
+      border-radius: 50%;
+      animation: radiate 2s ease-out infinite;
+    }
+    @keyframes radiate {
+      0% {
+        transform: scale(0.5);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
+    }
+    .shield {
+      position: absolute;
+      inset: -30px;
+      border: 4px solid rgba(124, 244, 255, 0.4);
+      border-radius: 30px;
+      opacity: 0.6;
+    }
+    .controls {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .control-group {
+      margin-bottom: 25px;
+    }
+    .control-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+    .control-group input[type="range"] {
+      width: 100%;
+      height: 8px;
+      background: rgba(178, 141, 255, 0.2);
+      border-radius: 4px;
+      outline: none;
+    }
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .value-display {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(178, 141, 255, 0.2);
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(178, 141, 255, 0.1);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .alert {
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+    .alert-ok {
+      background: rgba(156, 255, 110, 0.2);
+      color: #9CFF6E;
+    }
+    .alert-warn {
+      background: rgba(255, 209, 102, 0.2);
+      color: #FFD166;
+    }
+    .alert-danger {
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    @media (max-width: 768px) {
+      .simulator {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧑‍🚀 Astronaut Radiation Simulator</h1>
+      <a href="index.html" class="back-btn">← Back to Home</a>
+    </div>
+    
+    <div class="simulator">
+      <div class="visualizer">
+        <h2 style="margin-bottom: 20px;">Space Station Protection</h2>
+        <div class="station-display" id="stationDisplay">
+          <div class="radiation-wave" id="radiationWave"></div>
+          <div class="station" id="station">
+            <div class="shield" id="shield"></div>
+            🧑‍🚀
+          </div>
+        </div>
+        <div class="info">
+          <strong>Radiation Exposure:</strong>
+          <div class="alert" id="alertBox">Safe levels - Normal operations</div>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <h3 style="margin-bottom: 20px; color: var(--accent);">Control Panel</h3>
+        
+        <div class="control-group">
+          <label for="solarActivity">Solar Activity Level</label>
+          <input type="range" id="solarActivity" min="0" max="100" value="20">
+          <div class="value-display" id="activityValue">20%</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="shielding">Station Shielding</label>
+          <input type="range" id="shielding" min="0" max="100" value="80">
+          <div class="value-display" id="shieldingValue">80%</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="exposure">Time Outside (hours)</label>
+          <input type="range" id="exposure" min="0" max="8" value="0" step="0.5">
+          <div class="value-display" id="exposureValue">0 h</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="dose">Radiation Dose (mSv/day)</label>
+          <input type="range" id="dose" min="0" max="50" value="1" disabled>
+          <div class="value-display" id="doseValue">1.0 mSv</div>
+        </div>
+        
+        <div class="info" style="font-size: 0.85rem;">
+          <p><strong>Safe Limits:</strong></p>
+          <p>NASA limit: 50 mSv/year for astronauts</p>
+          <p>Earth average: ~3 mSv/year</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const solarActivity = document.getElementById('solarActivity');
+    const shielding = document.getElementById('shielding');
+    const exposure = document.getElementById('exposure');
+    const dose = document.getElementById('dose');
+    
+    const activityValue = document.getElementById('activityValue');
+    const shieldingValue = document.getElementById('shieldingValue');
+    const exposureValue = document.getElementById('exposureValue');
+    const doseValue = document.getElementById('doseValue');
+    const alertBox = document.getElementById('alertBox');
+    const radiationWave = document.getElementById('radiationWave');
+    const shield = document.getElementById('shield');
+    
+    function updateAstronaut() {
+      const activity = parseInt(solarActivity.value);
+      const shield_val = parseInt(shielding.value);
+      const exp = parseFloat(exposure.value);
+      
+      activityValue.textContent = activity + '%';
+      shieldingValue.textContent = shield_val + '%';
+      exposureValue.textContent = exp + ' h';
+      
+      // Calculate radiation dose
+      const baseRadiation = 0.5; // mSv/day in space
+      const solarRadiation = (activity / 100) * 10; // Additional from solar activity
+      const exposureMultiplier = 1 + (exp / 8) * 3; // Increased exposure outside
+      const shieldingFactor = 1 - (shield_val / 100) * 0.9; // Shielding reduces dose
+      
+      const dailyDose = (baseRadiation + solarRadiation) * exposureMultiplier * shieldingFactor;
+      
+      dose.value = Math.round(dailyDose * 10) / 10;
+      doseValue.textContent = dailyDose.toFixed(1) + ' mSv';
+      
+      // Update visualization
+      radiationWave.style.borderColor = activity > 60 ? 'rgba(255, 107, 107, 0.8)' : 'rgba(255, 107, 107, 0.5)';
+      radiationWave.style.animationDuration = (3 - activity / 50) + 's';
+      radiationWave.style.display = activity > 30 ? 'block' : 'none';
+      
+      shield.style.opacity = shield_val / 100;
+      shield.style.borderWidth = Math.max(2, shield_val / 25) + 'px';
+      
+      // Update alert
+      alertBox.classList.remove('alert-ok', 'alert-warn', 'alert-danger');
+      
+      if (dailyDose < 5) {
+        alertBox.textContent = 'Safe levels - Normal operations';
+        alertBox.classList.add('alert-ok');
+      } else if (dailyDose < 15) {
+        alertBox.textContent = 'Elevated radiation - Limit EVA activities';
+        alertBox.classList.add('alert-warn');
+      } else {
+        alertBox.textContent = 'DANGER! Seek shelter immediately! High radiation!';
+        alertBox.classList.add('alert-danger');
+      }
+      
+      if (activity > 70) {
+        alertBox.textContent = 'SOLAR STORM ALERT! Move to shielded area!';
+        alertBox.classList.add('alert-danger');
+      }
+    }
+    
+    solarActivity.addEventListener('input', updateAstronaut);
+    shielding.addEventListener('input', updateAstronaut);
+    exposure.addEventListener('input', updateAstronaut);
+    
+    updateAstronaut();
+  </script>
+</body>
+</html>
