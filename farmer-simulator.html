@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Farmer GPS Simulator</title>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --card: #1a2540;
+      --text: #e9f2ff;
+      --accent: #9CFF6E;
+      --border: rgba(156, 255, 110, 0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-rounded, system-ui, sans-serif;
+      background: linear-gradient(180deg, #0a0e1a, #1a3a1a);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: var(--accent);
+    }
+    .back-btn {
+      padding: 12px 24px;
+      background: rgba(156, 255, 110, 0.2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      background: rgba(156, 255, 110, 0.3);
+      transform: translateY(-2px);
+    }
+    .simulator {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .visualizer {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      min-height: 500px;
+    }
+    .field-display {
+      width: 100%;
+      height: 400px;
+      background: linear-gradient(135deg, #2d5016 0%, #1a3a1a 100%);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .tractor {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: all 0.5s ease;
+      box-shadow: 0 4px 10px rgba(156, 255, 110, 0.5);
+    }
+    .field-line {
+      position: absolute;
+      height: 2px;
+      background: rgba(156, 255, 110, 0.3);
+      transform-origin: left;
+    }
+    .gps-signal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent), transparent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.2); }
+    }
+    .controls {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .control-group {
+      margin-bottom: 25px;
+    }
+    .control-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+    .control-group input[type="range"] {
+      width: 100%;
+      height: 8px;
+      background: rgba(156, 255, 110, 0.2);
+      border-radius: 4px;
+      outline: none;
+    }
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .value-display {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(156, 255, 110, 0.2);
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(156, 255, 110, 0.1);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    @media (max-width: 768px) {
+      .simulator {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚜 Farmer GPS Simulator</h1>
+      <a href="index.html" class="back-btn">← Back to Home</a>
+    </div>
+    
+    <div class="simulator">
+      <div class="visualizer">
+        <h2 style="margin-bottom: 20px;">Precision Farming Field</h2>
+        <div class="field-display" id="fieldDisplay">
+          <div class="gps-signal" id="gpsSignal"></div>
+          <div class="tractor" id="tractor">🚜</div>
+        </div>
+        <div class="info">
+          <strong>GPS Status:</strong>
+          <p id="statusText">Signal strong. Precision planting active.</p>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <h3 style="margin-bottom: 20px; color: var(--accent);">Control Panel</h3>
+        
+        <div class="control-group">
+          <label for="ionospheric">Ionospheric Disturbance</label>
+          <input type="range" id="ionospheric" min="0" max="100" value="10">
+          <div class="value-display" id="ionosphericValue">10%</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="satellites">Available Satellites</label>
+          <input type="range" id="satellites" min="4" max="12" value="8">
+          <div class="value-display" id="satellitesValue">8</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="accuracy">GPS Accuracy (meters)</label>
+          <input type="range" id="accuracy" min="1" max="50" value="5">
+          <div class="value-display" id="accuracyValue">5 m</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="speed">Tractor Speed (km/h)</label>
+          <input type="range" id="speed" min="0" max="20" value="10">
+          <div class="value-display" id="speedValue">10 km/h</div>
+        </div>
+        
+        <div class="info" style="font-size: 0.85rem;">
+          <p><strong>Impact:</strong></p>
+          <p>Solar storms disrupt GPS signals, affecting precision agriculture operations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const ionospheric = document.getElementById('ionospheric');
+    const satellites = document.getElementById('satellites');
+    const accuracy = document.getElementById('accuracy');
+    const speed = document.getElementById('speed');
+    
+    const ionosphericValue = document.getElementById('ionosphericValue');
+    const satellitesValue = document.getElementById('satellitesValue');
+    const accuracyValue = document.getElementById('accuracyValue');
+    const speedValue = document.getElementById('speedValue');
+    const statusText = document.getElementById('statusText');
+    const tractor = document.getElementById('tractor');
+    const gpsSignal = document.getElementById('gpsSignal');
+    const fieldDisplay = document.getElementById('fieldDisplay');
+    
+    let tractorX = 50;
+    let tractorY = 50;
+    
+    function updateFarm() {
+      const iono = parseInt(ionospheric.value);
+      const sats = parseInt(satellites.value);
+      const acc = parseInt(accuracy.value);
+      const spd = parseInt(speed.value);
+      
+      ionosphericValue.textContent = iono + '%';
+      satellitesValue.textContent = sats;
+      accuracyValue.textContent = acc + ' m';
+      speedValue.textContent = spd + ' km/h';
+      
+      // GPS signal quality
+      if (iono > 70 || sats < 6) {
+        gpsSignal.style.background = 'radial-gradient(circle, #ff6b6b, transparent)';
+        gpsSignal.style.animationDuration = '0.5s';
+      } else if (iono > 40 || sats < 8) {
+        gpsSignal.style.background = 'radial-gradient(circle, #FFD166, transparent)';
+        gpsSignal.style.animationDuration = '1s';
+      } else {
+        gpsSignal.style.background = 'radial-gradient(circle, var(--accent), transparent)';
+        gpsSignal.style.animationDuration = '2s';
+      }
+      
+      // Tractor position with drift based on accuracy
+      const drift = acc / 10;
+      tractorX += (Math.random() - 0.5) * drift;
+      tractorY += spd / 20;
+      
+      // Keep tractor in bounds
+      if (tractorY > fieldDisplay.clientHeight - 40) {
+        tractorY = 0;
+        tractorX = 50 + Math.random() * 50;
+      }
+      tractorX = Math.max(20, Math.min(tractorX, fieldDisplay.clientWidth - 60));
+      
+      tractor.style.left = tractorX + 'px';
+      tractor.style.top = tractorY + 'px';
+      
+      // Status text
+      let status = '';
+      if (iono < 30 && sats >= 8 && acc <= 10) {
+        status = 'Signal strong. Precision planting active with ±' + acc + 'm accuracy.';
+      } else if (iono < 60 && sats >= 6) {
+        status = 'Moderate signal degradation. Accuracy reduced to ±' + acc + 'm.';
+      } else {
+        status = 'WARNING: Poor GPS signal! Manual control recommended. Accuracy: ±' + acc + 'm';
+      }
+      statusText.textContent = status;
+    }
+    
+    ionospheric.addEventListener('input', updateFarm);
+    satellites.addEventListener('input', updateFarm);
+    accuracy.addEventListener('input', updateFarm);
+    speed.addEventListener('input', updateFarm);
+    
+    setInterval(updateFarm, 100);
+    updateFarm();
+  </script>
+</body>
+</html>

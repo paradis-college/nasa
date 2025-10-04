@@ -133,8 +133,9 @@
       <div class="brand">SpaceWeatherSim</div>
       <div class="spacer"></div>
       <div class="tabs" role="tablist">
+        <a class="tab" id="tab-home" href="index.html" role="tab">Home</a>
         <a class="tab" id="tab-sim" href="#simulators" role="tab">Simulators</a>
-        <a class="tab" id="tab-about" href="#about" role="tab">About us</a>
+        <a class="tab" id="tab-about" href="book.html" role="tab">About us</a>
         <a class="tab" id="tab-cal" href="#calendar" role="tab">Calendar</a>
       </div>
     </div>
@@ -148,32 +149,24 @@
       <div class="grid" id="sim-grid"></div>
     </section>
 
-    <!-- ABOUT -->
-    <section id="about" aria-labelledby="tab-about">
-      <h2>About SpaceWeatherSim</h2>
-      <div class="about">
-        <p><span class="emoji">🎯</span> Learn space weather with quick missions and bright visuals.</p>
-        <p><span class="emoji">🧭</span> Three stops: <strong>Simulators</strong>, <strong>About us</strong>, <strong>Calendar</strong>.</p>
-        <p><span class="emoji">🧩</span> Works on phones and laptops. No installs. One single file.</p>
-        <p><span class="emoji">🎨</span> Friendly colors, rounded shapes, big buttons.</p>
-      </div>
-    </section>
-
     <!-- CALENDAR (BETA) -->
     <section id="calendar" aria-labelledby="tab-cal">
       <div style="display:flex;align-items:center;gap:10px">
-        <h2 style="margin:0">Solar events calendar</h2>
+        <h2 style="margin:0">Space Weather Events Calendar</h2>
         <span class="pill" title="Work in progress">Beta</span>
       </div>
-      <p class="no-events">Source: NASA DONKI (api.nasa.gov). Uses a default key and supports your own.</p>
+      <p class="no-events">Source: NASA DONKI (api.nasa.gov). View space weather events and where they can be observed on Earth.</p>
 
       <div class="cal-wrap">
         <div class="cal-head">
           <button class="btn" id="prevMonth" aria-label="Previous month">◀</button>
           <h3 id="calTitle">Month YYYY</h3>
           <div class="sp"></div>
+          <label style="display:flex;align-items:center;gap:8px">Year
+            <select id="yearSelect" class="kbd" style="min-width:100px"></select>
+          </label>
           <label style="display:flex;align-items:center;gap:8px">API key
-            <input id="nasaKey" class="kbd" style="min-width:220px"/>
+            <input id="nasaKey" class="kbd" style="min-width:180px"/>
           </label>
           <button class="btn" id="reload">Reload</button>
           <button class="btn" id="nextMonth" aria-label="Next month">▶</button>
@@ -201,7 +194,6 @@
     const sections = Array.from(document.querySelectorAll('main section'));
     const tabs = {
       simulators: document.getElementById('tab-sim'),
-      about: document.getElementById('tab-about'),
       calendar: document.getElementById('tab-cal')
     };
     function route(){
@@ -216,12 +208,12 @@
 
     // --- Simulators grid (kid-friendly labels + emojis) ---
     const sims = [
-      {key:'solar-flares', title:'Solar flares ☀️', desc:'See how flares get their class.'},
-      {key:'power-grid', title:'Power grid 🔌', desc:'Keep the lights on during storms.'},
-      {key:'aurora', title:'Aurora catchers 📸', desc:'Plan a glow-hunt by Kp index.'},
-      {key:'farmer-stories', title:'Farmer stories 🚜', desc:'Smart choices for healthy crops.'},
-      {key:'astronaut', title:'Astronaut 🧑\u200d🚀', desc:'Find the safe room in time.'},
-      {key:'radio', title:'Radio 📻', desc:'Reroute when HF goes quiet.'},
+      {key:'solar-flare-simulator.html', title:'Solar flares ☀️', desc:'See how flares get their class.'},
+      {key:'engineer-simulator.html', title:'Power grid 🔌', desc:'Keep the lights on during storms.'},
+      {key:'aurora-simulator.html', title:'Aurora catchers 🌈', desc:'Plan a glow-hunt by Kp index.'},
+      {key:'farmer-simulator.html', title:'Farmer stories 🚜', desc:'Smart choices for healthy crops.'},
+      {key:'astronaut-simulator.html', title:'Astronaut 🧑\u200d🚀', desc:'Find the safe room in time.'},
+      {key:'radio-simulator.html', title:'Radio 📻', desc:'Reroute when HF goes quiet.'},
     ];
     const simGrid = document.getElementById('sim-grid');
     simGrid.innerHTML = sims.map(s=>`
@@ -229,7 +221,7 @@
         <div class="art" aria-hidden="true"></div>
         <h3>${s.title}</h3>
         <p>${s.desc}</p>
-        <div class="actions"><a class="btn" href="#${s.key}">Play</a></div>
+        <div class="actions"><a class="btn" href="${s.key}">Play</a></div>
       </article>
     `).join('');
 
@@ -237,6 +229,7 @@
     const calGrid = document.getElementById('calGrid');
     const calTitle = document.getElementById('calTitle');
     const nasaKeyInput = document.getElementById('nasaKey');
+    const yearSelect = document.getElementById('yearSelect');
     const modal = document.getElementById('modal');
     const modalTitle = document.getElementById('modalTitle');
     const modalBody = document.getElementById('modalBody');
@@ -245,8 +238,23 @@
     const DEFAULT_KEY = 'o9FIZEgU2itrew0k9Y2qA9RhmeL49feU2B7fGZRR';
     nasaKeyInput.value = DEFAULT_KEY;
 
+    // Populate year selector
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear - 5; year <= currentYear + 1; year++) {
+      const option = document.createElement('option');
+      option.value = year;
+      option.textContent = year;
+      if (year === currentYear) option.selected = true;
+      yearSelect.appendChild(option);
+    }
+
     let current = new Date();
     current.setDate(1);
+
+    yearSelect.addEventListener('change', () => {
+      current.setFullYear(parseInt(yearSelect.value));
+      renderCalendar();
+    });
 
     document.getElementById('prevMonth').onclick = ()=>{ current.setMonth(current.getMonth()-1); renderCalendar(); };
     document.getElementById('nextMonth').onclick = ()=>{ current.setMonth(current.getMonth()+1); renderCalendar(); };
@@ -359,8 +367,40 @@
       }else{
         const title = labelFor(e);
         modalTitle.textContent = title;
+        
+        // Add observation locations based on event type
+        let locationsHTML = '';
+        const type = getType(e);
+        
+        if (type === 'FLR' || type === 'CME') {
+          locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(124,244,255,0.1);border-radius:10px">
+            <strong>🌍 Global Impact:</strong>
+            <p>This event affects the entire sunlit side of Earth. Radio communications may be disrupted worldwide.</p>
+          </div>`;
+        } else if (type === 'GST' || e.kpIndex) {
+          const kp = e.kpIndex || 5;
+          let regions = '';
+          if (kp >= 7) {
+            regions = 'Visible at latitudes: 60°N and below, including Northern USA, Canada, Scandinavia, Russia, and southern hemisphere equivalents.';
+          } else if (kp >= 5) {
+            regions = 'Visible at latitudes: 65°N+, including Northern Canada, Alaska, Iceland, Northern Scandinavia, Northern Russia.';
+          } else {
+            regions = 'Visible primarily near polar regions: 70°N+, including Arctic Circle areas.';
+          }
+          locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(156,255,110,0.1);border-radius:10px">
+            <strong>🌈 Aurora Observation Zones:</strong>
+            <p>${regions}</p>
+            <p style="margin-top:8px"><em>Best viewing: Dark, clear skies away from city lights.</em></p>
+          </div>`;
+        } else if (type === 'RBE') {
+          locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(255,107,107,0.1);border-radius:10px">
+            <strong>📡 Affected Regions:</strong>
+            <p>Radio blackouts primarily affect high-frequency communications on the sunlit side of Earth. Aviation and maritime communications may be disrupted.</p>
+          </div>`;
+        }
+        
         const kv = Object.entries(e).filter(([k])=>!k.startsWith('__'));
-        modalBody.innerHTML = `<div style=\"display:grid;gap:8px\">${kv.map(([k,v])=>`<div><strong>${k}</strong><div class=\"kbd\" style=\"overflow:auto\">${typeof v==='object'? `<pre style='margin:0'>${JSON.stringify(v,null,2)}</pre>`: String(v)}</div></div>`).join('')}</div>`;
+        modalBody.innerHTML = locationsHTML + `<div style="display:grid;gap:8px">${kv.map(([k,v])=>`<div><strong>${k}</strong><div class=\"kbd\" style=\"overflow:auto\">${typeof v==='object'? `<pre style='margin:0'>${JSON.stringify(v,null,2)}</pre>`: String(v)}</div></div>`).join('')}</div>`;
       }
       modal.showModal();
     }

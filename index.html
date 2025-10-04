@@ -3,122 +3,304 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Stellar Stories Flipbook</title>
+  <title>Space Weather Stories - Welcome</title>
+  <meta name="color-scheme" content="dark light" />
   <style>
-    :root { --w: 720px; --h: 480px; --bg: #f5f5f7; --paper: #fff; --ink:#111; --accent:#0ea5e9; }
-    * { box-sizing: border-box; }
-    body { margin: 0; font: 16px/1.4 system-ui, sans-serif; background: var(--bg); color: var(--ink); display: grid; place-items: center; min-height: 100vh; padding: 20px; }
-    .wrap { display: grid; gap: 12px; }
-    .controls { display:flex; gap:8px; justify-content:center; align-items:center; }
-    button { border: 0; padding: 10px 14px; border-radius: 10px; background: #e5e7eb; cursor: pointer; font-weight: 600; }
-    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-    .stage { position: relative; width: min(100vw - 32px, var(--w)); aspect-ratio: 3/2; perspective: 2000px; background: transparent; }
-    .paper { position:absolute; inset:0; transform-style: preserve-3d; transition: transform 650ms cubic-bezier(.2,.6,.2,1); }
-    .paper.turned { transform: rotateY(-180deg); }
-    .face { position:absolute; inset:0; backface-visibility: hidden; overflow:hidden; }
-    .content { position:absolute; top:0; bottom:0; width:50%; background: var(--paper); box-shadow: 0 6px 20px rgba(0,0,0,.12); overflow:auto; padding:24px; }
-    .front .content { right:0; transform: translateZ(1px); }
-    .back { transform: rotateY(180deg); }
-    .back .content { left:0; }
-    .hotzones { position:absolute; inset:0; display:grid; grid-template-columns: 1fr 1fr; }
-    .hotzones > div { pointer-events:auto; }
-    .hotzones .prev { cursor:w-resize; }
-    .hotzones .next { cursor:e-resize; }
+    :root {
+      --bg: #0a0e1a;
+      --text: #e9f2ff;
+      --accent: #7cf4ff;
+      --hover: #9CFF6E;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: linear-gradient(180deg, #0a0e1a 0%, #1a1f3a 50%, #0a0e1a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Animated stars background */
+    .stars {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(2px 2px at 20% 30%, white, transparent),
+        radial-gradient(2px 2px at 60% 70%, white, transparent),
+        radial-gradient(1px 1px at 50% 50%, white, transparent),
+        radial-gradient(1px 1px at 80% 10%, white, transparent),
+        radial-gradient(2px 2px at 90% 60%, white, transparent),
+        radial-gradient(1px 1px at 33% 80%, white, transparent);
+      background-size: 200% 200%;
+      animation: twinkle 8s ease-in-out infinite;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.9; }
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeIn 1s ease-out;
+    }
+    
+    h1 {
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 900;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--accent), var(--hover));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 40px rgba(124, 244, 255, 0.3);
+    }
+    
+    .subtitle {
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      color: #9fb5e6;
+      font-weight: 600;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+    }
+    
+    .element-card {
+      position: relative;
+      background: rgba(15, 30, 58, 0.6);
+      border: 2px solid rgba(124, 244, 255, 0.3);
+      border-radius: 24px;
+      padding: 40px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease-out backwards;
+    }
+    
+    .element-card:nth-child(1) { animation-delay: 0.1s; }
+    .element-card:nth-child(2) { animation-delay: 0.2s; }
+    .element-card:nth-child(3) { animation-delay: 0.3s; }
+    .element-card:nth-child(4) { animation-delay: 0.4s; }
+    .element-card:nth-child(5) { animation-delay: 0.5s; }
+    .element-card:nth-child(6) { animation-delay: 0.6s; }
+    
+    .element-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, var(--card-color) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .element-card:hover::before {
+      opacity: 0.2;
+    }
+    
+    .element-card:hover {
+      transform: translateY(-10px) scale(1.05);
+      border-color: var(--hover);
+      box-shadow: 0 20px 60px rgba(124, 244, 255, 0.4);
+    }
+    
+    .element-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      display: inline-block;
+      filter: drop-shadow(0 4px 20px rgba(124, 244, 255, 0.5));
+      transition: transform 0.3s ease;
+    }
+    
+    .element-card:hover .element-icon {
+      transform: scale(1.2) rotate(5deg);
+    }
+    
+    .element-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+    
+    .element-desc {
+      color: #9fb5e6;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    
+    .aurora { --card-color: #9CFF6E; }
+    .solar-flare { --card-color: #FFD166; }
+    .engineer { --card-color: #7cf4ff; }
+    .farmer { --card-color: #9CFF6E; }
+    .astronaut { --card-color: #B28DFF; }
+    .radio { --card-color: #ff6b6b; }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 40px 20px;
+      color: #9fb5e6;
+      font-size: 0.9rem;
+    }
+    
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    
+    .footer a:hover {
+      color: var(--hover);
+    }
   </style>
 </head>
 <body>
-  <div class="wrap" aria-label="Flipbook">
-    <div class="stage" id="stage">
-      <div class="hotzones" aria-hidden="true">
-        <div class="prev" id="tapPrev"></div>
-        <div class="next" id="tapNext"></div>
-      </div>
+  <div class="stars"></div>
+  
+  <div class="container">
+    <header>
+      <h1>🌌 Space Weather Stories</h1>
+      <p class="subtitle">Explore how space weather affects everyone on Earth</p>
+    </header>
+    
+    <div class="grid">
+      <a href="aurora-simulator.html" class="element-card aurora">
+        <div class="element-icon">🌈</div>
+        <h2 class="element-title">Aurora</h2>
+        <p class="element-desc">Experience the dancing lights of the northern and southern skies</p>
+      </a>
+      
+      <a href="solar-flare-simulator.html" class="element-card solar-flare">
+        <div class="element-icon">☀️</div>
+        <h2 class="element-title">Solar Flare</h2>
+        <p class="element-desc">Watch powerful eruptions from the Sun's surface</p>
+      </a>
+      
+      <a href="engineer-simulator.html" class="element-card engineer">
+        <div class="element-icon">⚡</div>
+        <h2 class="element-title">Electrical Engineer</h2>
+        <p class="element-desc">Protect power grids from solar storms</p>
+      </a>
+      
+      <a href="farmer-simulator.html" class="element-card farmer">
+        <div class="element-icon">🚜</div>
+        <h2 class="element-title">Farmer</h2>
+        <p class="element-desc">Navigate GPS disruptions during space weather events</p>
+      </a>
+      
+      <a href="astronaut-simulator.html" class="element-card astronaut">
+        <div class="element-icon">🧑‍🚀</div>
+        <h2 class="element-title">Astronaut</h2>
+        <p class="element-desc">Stay safe from radiation during solar storms in orbit</p>
+      </a>
+      
+      <a href="radio-simulator.html" class="element-card radio">
+        <div class="element-icon">📻</div>
+        <h2 class="element-title">Radio Operator</h2>
+        <p class="element-desc">Maintain communications when HF radio goes quiet</p>
+      </a>
     </div>
-    <div class="controls">
-      <button id="prev">⟵ Prev</button>
-      <span id="status"></span>
-      <button id="next">Next ⟶</button>
+    
+    <div class="footer">
+      <p>
+        <a href="hub.html">View All Simulators</a> | 
+        <a href="book.html">About Us</a> | 
+        <a href="hub.html#calendar">Space Weather Calendar</a>
+      </p>
+      <p style="margin-top: 20px; opacity: 0.7;">
+        Built for NASA Space Apps Challenge 2025 - Stellar Stories
+      </p>
     </div>
   </div>
-
+  
   <script>
-    'use strict';
-
-    // Adapted for NASA Space Apps 2025 challenge "Stellar Stories"
-    const PAGES = [
-      { title:"Cover", html:`<h1>Stellar Stories</h1><p>Space Weather Through the Eyes of Earthlings</p><p><em>Image placeholder: cover illustration of Sun and Earth connected by light</em></p>` },
-      { title:"What is Space Weather?", html:`<h2>Definition</h2><p>Space weather means the Sun's activity—like flares and storms—that affects space and Earth. Though the Sun is 93 million miles away, its energy reaches us and changes our daily lives.</p><p><em>Image placeholder: diagram of solar flare reaching Earth</em></p>` },
-      { title:"Farmer's Story", html:`<h2>The Farmer</h2><p>A farmer uses a drone to watch crops. One day, the drone lost signal because of a solar storm. The farmer had to rely on walking the fields instead.</p><a href="https://scratch.mit.edu/projects/10128407" target="_blank">Help the farmer in Scratch</a><p><em>Image placeholder: farmer looking up at a buzzing drone</em></p>` },
-      { title:"Pilot's Story", html:`<h2>The Pilot</h2><p>A pilot flying at night noticed the radio went quiet. Space weather can block signals, making flights harder to guide safely.</p><p><em>Image placeholder: airplane cockpit with dark skies and aurora outside</em></p>` },
-      { title:"Astronaut's Story", html:`<h2>The Astronaut</h2><p>Astronauts in orbit see Earth’s glow but must shelter when solar storms hit, because radiation is dangerous in space.</p><p><em>Image placeholder: astronaut viewing aurora from space station window</em></p>` },
-      { title:"Kid's Imagination", html:`<h2>The Student</h2><p>Back in class, a kid learns about space weather. Looking out the window, they imagine: What if I became a solar flare?</p><p><em>Image placeholder: child by window with sunbeam across desk</em></p>` },
-      { title:"Solar Flare's View", html:`<h2>Becoming a Flare</h2><p>The child imagines racing as plasma, bursting with light, crossing space toward Earth. The flare wonders: who will I touch? A farmer, a pilot, a satellite?</p><p><em>Image placeholder: artistic wave of light racing across solar system</em></p>` },
-      { title:"Interactive", html:`<h2>Play and Learn</h2><p>Space weather can be explored through games and creativity.</p><a href="#" onclick="window.open('https://www.roblox.com/discover/#!/search/obby%20solar%20flare','_blank'); return false;">Try a Roblox Obby</a><p><em>Image placeholder: screenshot mock-up of a Roblox obby about space storms</em></p>` },
-      { title:"Closing", html:`<h2>Our Story</h2><p>From farmers to astronauts, space weather affects everyone. We are all part of Earth’s stellar story, learning together how to live with the Sun’s moods.</p><p><em>Image placeholder: group of diverse people looking at the sky with aurora</em></p>` },
-    ];
-
-    const stage = document.getElementById('stage');
-    const totalPages = PAGES.length;
-    const totalSheets = Math.ceil(totalPages / 2);
-    const papers = [];
-
-    for (let s = 0; s < totalSheets; s++) {
-      const rightIndex = s * 2;
-      const leftIndex  = rightIndex + 1;
-      const paper = document.createElement('section');
-      paper.className = 'paper';
-      paper.style.zIndex = String(totalSheets - s);
-      const front = document.createElement('div');
-      front.className = 'face front';
-      front.appendChild(makeContent('right', rightIndex));
-      const back = document.createElement('div');
-      back.className = 'face back';
-      back.appendChild(makeContent('left', leftIndex));
-      paper.appendChild(front);
-      paper.appendChild(back);
-      stage.appendChild(paper);
-      papers.push(paper);
-    }
-
-    function makeContent(side, index){
-      const content = document.createElement('article');
-      content.className = 'content';
-      if (index >= totalPages) { content.innerHTML = ''; return content; }
-      content.setAttribute('role','region');
-      content.setAttribute('aria-label', `Page ${index+1}: ${PAGES[index].title}`);
-      content.innerHTML = `<h1>${escapeHtml(PAGES[index].title)}</h1>` + PAGES[index].html;
-      return content;
-    }
-
-    function escapeHtml(s){
-      const map = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'};
-      return String(s).replace(/[&<>\"]+/g, c => map[c]);
-    }
-
-    let current = 0;
-    function clamp(n, min, max){ return Math.min(Math.max(n, min), max); }
-    function setPage(p){
-      current = clamp(p, 0, totalPages - 1);
-      const sheetIndex = Math.floor(current / 2);
-      papers.forEach((paper, i) => paper.classList.toggle('turned', i < sheetIndex));
-      papers.forEach((paper, i) => { paper.style.zIndex = i < sheetIndex ? String(100 + i) : String(100 - i); });
-      updateStatus();
-    }
-    function next(){ setPage(current + 1); }
-    function prev(){ setPage(current - 1); }
-    function updateStatus(){ document.getElementById('status').textContent = `Page ${current+1} / ${totalPages}`; }
-
-    document.getElementById('next').addEventListener('click', next);
-    document.getElementById('prev').addEventListener('click', prev);
-    document.getElementById('tapNext').addEventListener('click', next);
-    document.getElementById('tapPrev').addEventListener('click', prev);
-
-    addEventListener('keydown', (e)=>{
-      if (e.key === 'ArrowRight') next();
-      else if (e.key === 'ArrowLeft') prev();
+    // Add smooth scroll behavior
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
     });
-
-    setPage(0);
+    
+    // Add particle effect on hover
+    document.querySelectorAll('.element-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const particle = document.createElement('div');
+        particle.style.position = 'absolute';
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        particle.style.width = '4px';
+        particle.style.height = '4px';
+        particle.style.borderRadius = '50%';
+        particle.style.background = 'rgba(124, 244, 255, 0.8)';
+        particle.style.pointerEvents = 'none';
+        particle.style.animation = 'particle 0.6s ease-out forwards';
+        
+        card.appendChild(particle);
+        
+        setTimeout(() => particle.remove(), 600);
+      });
+    });
+    
+    // Add CSS animation for particles
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes particle {
+        to {
+          transform: translateY(-20px);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
 </html>

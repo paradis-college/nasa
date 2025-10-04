@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurora Simulator</title>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --card: #1a2540;
+      --text: #e9f2ff;
+      --accent: #9CFF6E;
+      --border: rgba(156, 255, 110, 0.3);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-rounded, system-ui, sans-serif;
+      background: linear-gradient(180deg, #0a0e1a, #1a1f3a);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: var(--accent);
+    }
+    .back-btn {
+      padding: 12px 24px;
+      background: rgba(156, 255, 110, 0.2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      background: rgba(156, 255, 110, 0.3);
+      transform: translateY(-2px);
+    }
+    .simulator {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .visualizer {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      min-height: 500px;
+      position: relative;
+      overflow: hidden;
+    }
+    .aurora-display {
+      width: 100%;
+      height: 400px;
+      background: linear-gradient(180deg, #0a0e1a 0%, #1a3a1a 100%);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .aurora-wave {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(180deg, transparent, var(--accent));
+      opacity: 0.6;
+      animation: wave 3s ease-in-out infinite;
+      filter: blur(20px);
+    }
+    @keyframes wave {
+      0%, 100% { transform: translateY(0) scaleX(1); opacity: 0.6; }
+      50% { transform: translateY(-20px) scaleX(1.2); opacity: 0.8; }
+    }
+    .controls {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    .control-group {
+      margin-bottom: 25px;
+    }
+    .control-group label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+    .control-group input[type="range"] {
+      width: 100%;
+      height: 8px;
+      background: rgba(156, 255, 110, 0.2);
+      border-radius: 4px;
+      outline: none;
+    }
+    .control-group input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .value-display {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(156, 255, 110, 0.2);
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(156, 255, 110, 0.1);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    @media (max-width: 768px) {
+      .simulator {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌈 Aurora Simulator</h1>
+      <a href="index.html" class="back-btn">← Back to Home</a>
+    </div>
+    
+    <div class="simulator">
+      <div class="visualizer">
+        <h2 style="margin-bottom: 20px;">Aurora Visualization</h2>
+        <div class="aurora-display" id="auroraDisplay">
+          <div class="aurora-wave" id="auroraWave"></div>
+        </div>
+        <div class="info">
+          <strong>Current Status:</strong>
+          <p id="statusText">Kp Index: 3 - Moderate aurora activity. Visible at high latitudes.</p>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <h3 style="margin-bottom: 20px; color: var(--accent);">Control Panel</h3>
+        
+        <div class="control-group">
+          <label for="kpIndex">Kp Index (0-9)</label>
+          <input type="range" id="kpIndex" min="0" max="9" value="3" step="1">
+          <div class="value-display" id="kpValue">3</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="intensity">Light Intensity</label>
+          <input type="range" id="intensity" min="0" max="100" value="60">
+          <div class="value-display" id="intensityValue">60%</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="latitude">Observer Latitude</label>
+          <input type="range" id="latitude" min="-90" max="90" value="65">
+          <div class="value-display" id="latitudeValue">65°N</div>
+        </div>
+        
+        <div class="control-group">
+          <label for="solarWind">Solar Wind Speed (km/s)</label>
+          <input type="range" id="solarWind" min="300" max="800" value="400">
+          <div class="value-display" id="solarWindValue">400 km/s</div>
+        </div>
+        
+        <div class="info" style="font-size: 0.85rem;">
+          <p><strong>About Auroras:</strong></p>
+          <p>Auroras occur when solar wind particles collide with Earth's atmosphere, creating beautiful light displays near the poles.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const kpIndex = document.getElementById('kpIndex');
+    const intensity = document.getElementById('intensity');
+    const latitude = document.getElementById('latitude');
+    const solarWind = document.getElementById('solarWind');
+    
+    const kpValue = document.getElementById('kpValue');
+    const intensityValue = document.getElementById('intensityValue');
+    const latitudeValue = document.getElementById('latitudeValue');
+    const solarWindValue = document.getElementById('solarWindValue');
+    
+    const statusText = document.getElementById('statusText');
+    const auroraWave = document.getElementById('auroraWave');
+    const auroraDisplay = document.getElementById('auroraDisplay');
+    
+    function updateAurora() {
+      const kp = parseInt(kpIndex.value);
+      const intens = parseInt(intensity.value);
+      const lat = parseInt(latitude.value);
+      const wind = parseInt(solarWind.value);
+      
+      kpValue.textContent = kp;
+      intensityValue.textContent = intens + '%';
+      latitudeValue.textContent = lat + (lat >= 0 ? '°N' : '°S');
+      solarWindValue.textContent = wind + ' km/s';
+      
+      // Update aurora visualization
+      auroraWave.style.opacity = (intens / 100) * 0.8;
+      auroraWave.style.height = (100 + kp * 20) + 'px';
+      auroraWave.style.filter = `blur(${30 - kp * 2}px)`;
+      
+      // Update animation speed based on solar wind
+      const animSpeed = 5 - (wind - 300) / 125;
+      auroraWave.style.animationDuration = Math.max(1, animSpeed) + 's';
+      
+      // Update status text
+      let status = '';
+      if (kp <= 2) {
+        status = `Kp Index: ${kp} - Quiet conditions. Aurora only visible near polar regions.`;
+      } else if (kp <= 4) {
+        status = `Kp Index: ${kp} - Moderate activity. Aurora visible at high latitudes (60°+).`;
+      } else if (kp <= 6) {
+        status = `Kp Index: ${kp} - Active conditions. Aurora may be visible at mid-latitudes (50°+).`;
+      } else {
+        status = `Kp Index: ${kp} - Major storm! Aurora visible at lower latitudes (40°+).`;
+      }
+      
+      const absLat = Math.abs(lat);
+      if (absLat < 40) {
+        status += ' Your location is too far from poles to see aurora unless there is a major storm.';
+      } else if (absLat < 60) {
+        status += kp >= 6 ? ' You might see aurora at your latitude!' : ' You need stronger activity to see aurora at your latitude.';
+      } else {
+        status += ' Great location for aurora viewing!';
+      }
+      
+      statusText.textContent = status;
+      
+      // Add color variations based on Kp
+      const colors = [
+        '#9CFF6E', // Green (most common)
+        '#7cf4ff', // Blue
+        '#B28DFF', // Purple
+        '#ff6b6b'  // Red (rare, high energy)
+      ];
+      const colorIndex = Math.min(Math.floor(kp / 3), colors.length - 1);
+      auroraWave.style.background = `linear-gradient(180deg, transparent, ${colors[colorIndex]})`;
+    }
+    
+    kpIndex.addEventListener('input', updateAurora);
+    intensity.addEventListener('input', updateAurora);
+    latitude.addEventListener('input', updateAurora);
+    solarWind.addEventListener('input', updateAurora);
+    
+    updateAurora();
+  </script>
+</body>
+</html>
