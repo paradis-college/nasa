@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Solar Flare Lab — Ultra Visual</title>
+<style>
+  :root{
+    --bg:#0a0e1a;--card:#1a2540;--text:#e9f2ff;--accent:#FFD166;--border:rgba(255,209,102,.35);
+    --ok:#9CFF6E;--warn:#FFD166;--bad:#ff6b6b;--vio:#B28DFF;--cyan:#7cf4ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:ui-rounded,system-ui,sans-serif;background:linear-gradient(180deg,#0a0e1a,#2a1f0a);color:var(--text);min-height:100vh;padding:20px}
+  .container{max-width:1200px;margin:0 auto}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+  h1{font-size:2rem;color:var(--accent)}
+  a.back{padding:10px 18px;border:2px solid var(--border);border-radius:12px;color:var(--accent);text-decoration:none;background:rgba(255,209,102,.15)}
+  .section{margin-top:22px}
+  .card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:14px}
+  canvas{width:100%;height:420px;display:block;border-radius:12px;background:#0d142f}
+  .controls .row{margin-bottom:12px}
+  label{display:block;font-weight:800;font-size:.95rem;color:var(--accent);margin-bottom:6px}
+  input[type="range"],select{width:100%}
+  .value{font-family:ui-monospace,Menlo,monospace;font-size:.9rem;opacity:.95}
+  .btn{background:linear-gradient(180deg,#2e8cff,#1e6bd6);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
+  .btn.secondary{background:linear-gradient(180deg,#6fe6c2,#3abf9e);color:#00372b}
+  .btnrow{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .badge{display:inline-block;padding:4px 8px;border-radius:9999px;font-weight:800}
+  .ok{background:rgba(156,255,110,.15);color:var(--ok)}
+  .warn{background:rgba(255,209,102,.15);color:var(--warn)}
+  .bad{background:rgba(255,107,107,.15);color:var(--bad);animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.75}}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}canvas{height:340px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>~/ Solar Flare Lab — Ultra Visual</h1>
+    <a class="back" href="index.html">← Back</a>
+  </div>
+
+  <!-- SIM 1: Active Region & Flare Loops -->
+  <div class="section card">
+    <h2>Simulator 1 — Active regions, loops, and flare bursts</h2>
+    <div class="grid" style="margin-top:8px">
+      <div>
+        <canvas id="arCanvas"></canvas>
+        <div class="btnrow">
+          <button id="pause1" class="btn secondary">Pause</button>
+          <button id="burst1" class="btn">Trigger burst</button>
+          <span class="value" id="readout1">Complexity: beta-γ · Shear: 0.55 · Flare prob: 18%/min · Last: C5.4 <span id="flag1" class="badge warn">active</span></span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="hale">Magnetic class</label>
+          <select id="hale">
+            <option value="alpha">α</option>
+            <option value="beta" selected>β</option>
+            <option value="betagamma">βγ</option>
+            <option value="betagammadelta">βγδ</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="shear">Shear / twist</label>
+          <input id="shear" type="range" min="0" max="1" step="0.01" value="0.55"/>
+        </div>
+        <div class="row">
+          <label for="emission">Coronal brightness</label>
+          <input id="emission" type="range" min="0" max="1" step="0.01" value="0.6"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIM 2: GOES X-ray light curve -->
+  <div class="section card">
+    <h2>Simulator 2 — X-ray light curve & class thresholds</h2>
+    <div class="grid" style="margin-top:8px">
+      <div>
+        <canvas id="goesCanvas"></canvas>
+        <div class="btnrow">
+          <button id="pause2" class="btn secondary">Pause</button>
+          <button id="inject2" class="btn">Inject flare</button>
+          <span class="value" id="readout2">Peak: M2.3 · Rise 6 min · Decay 18 min</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="baseFlux">Background (A..C)</label>
+          <input id="baseFlux" type="range" min="0" max="2" step="1" value="1"/>
+        </div>
+        <div class="row">
+          <label for="peakClass">Target class</label>
+          <select id="peakClass">
+            <option value="C" selected>C</option>
+            <option value="M">M</option>
+            <option value="X">X</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="dur">Duration (min)</label>
+          <input id="dur" type="range" min="5" max="120" step="5" value="30"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIM 3: CME propagation to Earth -->
+  <div class="section card">
+    <h2>Simulator 3 — CME shock travel & ETA</h2>
+    <div class="grid" style="margin-top:8px">
+      <div>
+        <canvas id="cmeCanvas"></canvas>
+        <div class="btnrow">
+          <button id="pause3" class="btn secondary">Pause</button>
+          <button id="launch3" class="btn">Launch CME</button>
+          <span class="value" id="readout3">Speed: 1100 km/s · Width: 70° · ETA: 31 h <span id="flag3" class="badge warn">geoeffective?</span></span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="cmeSpeed">CME speed (km/s)</label>
+          <input id="cmeSpeed" type="range" min="300" max="3000" step="50" value="1100"/>
+        </div>
+        <div class="row">
+          <label for="cmeWidth">Angular width (°)</label>
+          <input id="cmeWidth" type="range" min="20" max="120" step="5" value="70"/>
+        </div>
+        <div class="row">
+          <label for="launchLong">Source longitude (° from disk center)</label>
+          <input id="launchLong" type="range" min="-80" max="80" step="5" value="10"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIM 4: Day-side radio blackout map (R-scale) -->
+  <div class="section card">
+    <h2>Simulator 4 — R-scale radio blackout on the sunlit side</h2>
+    <div class="grid" style="margin-top:8px">
+      <div>
+        <canvas id="rmapCanvas" title="Click to set subsolar point"></canvas>
+        <div class="btnrow">
+          <button id="pause4" class="btn secondary">Pause</button>
+          <span class="value" id="readout4">Class: M5.0 · R3 · HF degraded over daylight hemisphere <span id="flag4" class="badge warn">operational impact</span></span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="rClass">Flare class</label>
+          <select id="rClass">
+            <option value="C">C</option>
+            <option value="M" selected>M</option>
+            <option value="X">X</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="rMult">Multiplier (1–9.9)</label>
+          <input id="rMult" type="range" min="10" max="99" step="1" value="50"/>
+        </div>
+        <div class="row">
+          <label for="rot">Earth rotation speed</label>
+          <input id="rot" type="range" min="0.2" max="2" step="0.1" value="1"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== helpers ===== */
+const DPR=()=>window.devicePixelRatio||1;
+function fit(c,ctx){const w=c.clientWidth||800,h=c.clientHeight||420;c.width=Math.round(w*DPR());c.height=Math.round(h*DPR());ctx.setTransform(DPR(),0,0,DPR(),0,0);return{w,h}}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function lerp(a,b,t){return a+(b-a)*t}
+function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
+
+/* ===== SIM 1: Active Region & Loops ===== */
+(function(){
+  const c=document.getElementById('arCanvas'), ctx=c.getContext('2d');
+  const hale=document.getElementById('hale'), shear=document.getElementById('shear'), emission=document.getElementById('emission');
+  const read=document.getElementById('readout1'), flag=document.getElementById('flag1');
+  const pause=document.getElementById('pause1'), burst=document.getElementById('burst1');
+  let t=0, run=true, loops=[], sparks=[], lastClass='C5.4';
+
+  function compMult(){ return {alpha:0.4,beta:1.0,betagamma:1.6,betagammadelta:2.4}[hale.value] }
+  function flareProbPerFrame(){ // per minute scaled ~ complexity * shear
+    const base=0.04; // base/min
+    return (base*compMult()*(+shear.value+0.1))/3600*60; // per frame (60fps)
+  }
+  function spawnLoop(){
+    const {w,h}=fit(c,ctx);
+    const R=Math.min(w,h)*0.36;
+    const a1=Math.random()*Math.PI*2, span= (0.4+Math.random()*0.7)*(0.6+compMult()*0.2);
+    const a2=a1+span;
+    const r=R*(0.55+Math.random()*0.35);
+    loops.push({a1,a2,r,life: 120+Math.random()*120, thick: 2+6*+emission.value, hue: 45+30*Math.random()});
+    if(loops.length>80) loops.shift();
+  }
+  function flareBurst(force=false){
+    const chance=flareProbPerFrame();
+    if(!force && Math.random()>chance*180) return;
+    const clsIdx=compMult()+(+shear.value>0.6?0.6:0); // rough scaling
+    const classBands=['C','M','X']; const pick = clsIdx>2?2: clsIdx>1.2?1:0;
+    const mult = (5+Math.floor(Math.random()*5))/10; // .5..1.0 shown as x? conservatively
+    lastClass = classBands[pick]+( (pick? (1+Math.floor(Math.random()*9)) : (1+Math.floor(Math.random()*9))) ).toFixed(0)+'.'+Math.floor(mult*10);
+    // blast particles
+    const {w,h}=fit(c,ctx); const cx=w/2, cy=h/2;
+    for(let i=0;i<120;i++){
+      const ang=Math.random()*Math.PI*2, sp=2+Math.random()*4*(1+pick);
+      sparks.push({x:cx+Math.cos(ang)*40,y:cy+Math.sin(ang)*40,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp,life:60+Math.random()*60});
+    }
+  }
+
+  function draw(){
+    const {w,h}=fit(c,ctx); const cx=w/2, cy=h/2;
+    // background + solar limb
+    ctx.clearRect(0,0,w,h);
+    const rad=Math.min(w,h)*0.42;
+    const gSun=ctx.createRadialGradient(cx,cy,rad*0.2,cx,cy,rad*1.2);
+    gSun.addColorStop(0,'#fff2b3'); gSun.addColorStop(.35,'#ffb703'); gSun.addColorStop(.65,'#ff8800'); gSun.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gSun; ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2); ctx.fill();
+
+    // magnetogram speckles
+    for(let i=0;i<220;i++){
+      const a=Math.random()*Math.PI*2, r=rad*(0.1+Math.random()*0.9);
+      const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
+      const pol = Math.sin(i*0.7+t*0.02)>0? 'rgba(124,244,255,.12)':'rgba(255,120,120,.12)';
+      ctx.fillStyle=pol; ctx.fillRect(x,y,2,2);
+    }
+
+    // existing loops
+    for(const L of loops){
+      const steps=40;
+      for(let i=0;i<steps;i++){
+        const p=i/steps, a=lerp(L.a1,L.a2,p);
+        const rr = L.r*(1+0.18*Math.sin(p*Math.PI))*(0.96+0.04*Math.sin(t*0.03+L.a1));
+        const x=cx+Math.cos(a)*rr, y=cy+Math.sin(a)*rr;
+        if(i>0){
+          ctx.strokeStyle=`hsla(${L.hue},100%,70%,${0.25+0.55*+emission.value})`;
+          ctx.lineWidth=L.thick*(1.1-0.7*Math.abs(p-0.5));
+          ctx.beginPath(); ctx.moveTo(loops._px,loops._py); ctx.lineTo(x,y); ctx.stroke();
+        }
+        loops._px=x; loops._py=y;
+      }
+      L.life--; 
+    }
+    loops=loops.filter(L=>L.life>0);
+
+    // sparks
+    for(const s of sparks){
+      ctx.fillStyle='rgba(255,220,160,.8)';
+      ctx.beginPath(); ctx.arc(s.x,s.y,2.2,0,Math.PI*2); ctx.fill();
+      s.x+=s.vx; s.y+=s.vy; s.vx*=0.98; s.vy*=0.98; s.life--;
+    }
+    sparks=sparks.filter(s=>s.life>0);
+
+    if(Math.random()<0.2) spawnLoop();
+    flareBurst(false);
+
+    const perMin = Math.round(clamp(compMult()* (+shear.value*1.2) * 20, 2, 60)) / 10;
+    read.textContent = `Complexity: ${({'alpha':'alpha','beta':'beta','betagamma':'beta-γ','betagammadelta':'β-γ-δ'})[hale.value]} · Shear: ${(+shear.value).toFixed(2)} · Flare prob: ${Math.round(perMin*10)}%/min · Last: ${lastClass} `;
+    badge(flag, perMin>3?'bad': perMin>1.4?'warn':'ok', perMin>3?'volatile': perMin>1.4?'active':'quiet');
+
+    if(run){ t+=1; requestAnimationFrame(draw); }
+  }
+  [hale,shear,emission].forEach(el=>el.addEventListener('input',()=>{ if(!run) draw(); }));
+  burst.onclick=()=>flareBurst(true);
+  pause.onclick=()=>{run=!run; pause.textContent=run?'Pause':'Resume'; if(run) draw();};
+  draw();
+})();
+
+/* ===== SIM 2: GOES X-ray Light Curve ===== */
+(function(){
+  const c=document.getElementById('goesCanvas'), ctx=c.getContext('2d');
+  const baseFlux=document.getElementById('baseFlux'), peakClass=document.getElementById('peakClass'), dur=document.getElementById('dur');
+  const read=document.getElementById('readout2'), pause=document.getElementById('pause2'), inject=document.getElementById('inject2');
+  let run=true, t=0, series=new Array(720).fill(1e-7); // 12h @1min bins (A-class floor)
+
+  function classToFlux(cls){return {A:1e-8,B:1e-7,C:1e-6,M:1e-5,X:1e-4}[cls]}
+  function bg(){return [classToFlux('A'),classToFlux('B'),classToFlux('C')][+baseFlux.value]}
+  function injectFlare(){
+    const peak=classToFlux(peakClass.value)*(0.1+ (Math.random()*0.9)); // class ±
+    const rise=Math.max(3, Math.round(+dur.value*0.25));
+    const decay=Math.max(8, Math.round(+dur.value*0.75));
+    const at = Math.floor(series.length*0.2 + Math.random()*series.length*0.6);
+    for(let i=-rise;i<decay;i++){
+      const idx=at+i; if(idx<0||idx>=series.length) continue;
+      const r = i<0 ? (1 - Math.abs(i)/rise) : Math.exp(-i/decay);
+      series[idx] += peak*r;
+    }
+    const klass = peak>=classToFlux('X')?'X': peak>=classToFlux('M')?'M':'C';
+    read.textContent = `Peak: ${klass}${(peak/classToFlux(klass)).toFixed(1)} · Rise ${rise} min · Decay ${decay} min`;
+  }
+
+  function draw(){
+    const {w,h}=fit(c,ctx); ctx.clearRect(0,0,w,h);
+    // scroll
+    series.shift(); series.push(bg()*(1+0.2*Math.sin(t*0.02))+series[series.length-1]*0.0);
+    // axes
+    ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
+    ctx.strokeRect(50,20,w-70,h-60);
+    // log grid and class lines
+    const classes=[['A',1e-8,'#9CFF6E'],['B',1e-7,'#7cf4ff'],['C',1e-6,'#FFD166'],['M',1e-5,'#ff6b6b'],['X',1e-4,'#B28DFF']];
+    function yFor(v){const ymin=1e-8,ymax=1e-3; const log= (Math.log10(v)-Math.log10(ymin))/(Math.log10(ymax)-Math.log10(ymin)); return 20+(h-60)*(1-log)}
+    classes.forEach(([lbl,val,col])=>{ const y=yFor(val); ctx.strokeStyle=col; ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(50,y); ctx.lineTo(w-20,y); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; ctx.fillText(lbl, 18, y+4); });
+
+    // curve
+    ctx.beginPath();
+    for(let i=0;i<series.length;i++){
+      const x=50 + (w-70)*i/(series.length-1);
+      const y=yFor(series[i]);
+      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+    }
+    const grad=ctx.createLinearGradient(50,0,w-20,0);
+    grad.addColorStop(0,'rgba(124,244,255,.9)'); grad.addColorStop(.5,'rgba(255,209,102,.9)'); grad.addColorStop(1,'rgba(255,120,120,.9)');
+    ctx.strokeStyle=grad; ctx.lineWidth=2; ctx.stroke();
+
+    if(run){ t+=1; requestAnimationFrame(draw); }
+  }
+  inject.onclick=injectFlare;
+  pause.onclick=()=>{run=!run; pause.textContent=run?'Pause':'Resume'; if(run) draw();};
+  draw(); injectFlare();
+})();
+
+/* ===== SIM 3: CME Propagation ===== */
+(function(){
+  const c=document.getElementById('cmeCanvas'), ctx=c.getContext('2d');
+  const sp=document.getElementById('cmeSpeed'), wd=document.getElementById('cmeWidth'), lon=document.getElementById('launchLong');
+  const read=document.getElementById('readout3'), flag=document.getElementById('flag3'), pause=document.getElementById('pause3'), launch=document.getElementById('launch3');
+  let run=true, t=0, waves=[];
+
+  function launchCME(){
+    const {w,h}=fit(c,ctx), cx=w*0.28, cy=h*0.52;
+    const speed=+sp.value, width=+wd.value, lam=+lon.value*Math.PI/180;
+    const segs=40;
+    waves.push({cx,cy,age:0,speed,width,lam,segs});
+    if(waves.length>6) waves.shift();
+    updateRead();
+  }
+  function etaHours(){ return Math.round((1.496e8 / (+sp.value*0.001)) / 3600) } // 1 AU, km/s -> hours
+  function updateRead(){
+    const hit = Math.abs(+lon.value) < (+wd.value/2);
+    read.textContent=`Speed: ${+sp.value} km/s · Width: ${+wd.value}° · ETA: ${etaHours()} h `;
+    badge(flag, hit? 'warn':'ok', hit?'geoeffective?':'limb')
+  }
+
+  function draw(){
+    const {w,h}=fit(c,ctx);
+    ctx.clearRect(0,0,w,h);
+    // Sun and Earth
+    const sx=w*0.28, sy=h*0.52, sr=Math.min(w,h)*0.18;
+    const g=ctx.createRadialGradient(sx,sy,sr*0.2,sx,sy,sr*1.2);
+    g.addColorStop(0,'#fff2b3'); g.addColorStop(.4,'#ffb703'); g.addColorStop(.8,'#ff8800'); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
+    const ex=w*0.85, ey=h*0.52; ctx.fillStyle='#7ab8ff'; ctx.beginPath(); ctx.arc(ex,ey,8,0,Math.PI*2); ctx.fill();
+
+    // Parker spiral hint
+    ctx.strokeStyle='rgba(124,244,255,.12)';
+    for(let i=0;i<4;i++){
+      ctx.beginPath();
+      for(let a=0;a<Math.PI*2;a+=0.05){
+        const r= sr+ i*20 + a*18;
+        const x=sx + Math.cos(a)*r, y=sy + Math.sin(a)*r*0.9;
+        if(a===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    // waves
+    waves.forEach(wv=>{
+      wv.age += (+sp.value/900); // faster → faster growth
+      const R= sr + wv.age*2.2;
+      const half= wv.width*Math.PI/180/2;
+      const a0= wv.lam - half, a1= wv.lam + half;
+      const path=new Path2D();
+      path.moveTo(sx,sy);
+      for(let a=a0; a<=a1; a+= (a1-a0)/60){
+        const x=sx + Math.cos(a)*R, y=sy + Math.sin(a)*R*0.9;
+        path.lineTo(x,y);
+      }
+      path.closePath();
+      const fade= clamp(1-wv.age/220,0,1);
+      ctx.fillStyle=`rgba(255,209,102,${0.18+0.35*fade})`; ctx.fill(path);
+      ctx.strokeStyle=`rgba(255,120,120,${0.25*fade})`; ctx.lineWidth=2; ctx.stroke(path);
+
+      // shock front indicator
+      ctx.strokeStyle=`rgba(178,141,255,${0.28*fade})`; ctx.setLineDash([6,6]);
+      ctx.beginPath();
+      ctx.ellipse(sx,sy,R+12,(R+12)*0.9,0,a0,a1);
+      ctx.stroke(); ctx.setLineDash([]);
+    });
+    waves=waves.filter(wv=>wv.age<260);
+
+    if(run){ t+=1; requestAnimationFrame(draw); }
+  }
+  [sp,wd,lon].forEach(el=>el.addEventListener('input',()=>{updateRead(); if(!run) draw();}));
+  launch.onclick=launchCME;
+  pause.onclick=()=>{run=!run; pause.textContent=run?'Pause':'Resume'; if(run) draw();};
+  updateRead(); draw(); launchCME();
+})();
+
+/* ===== SIM 4: Day-side Radio Blackout Map ===== */
+(function(){
+  const c=document.getElementById('rmapCanvas'), ctx=c.getContext('2d');
+  const rClass=document.getElementById('rClass'), rMult=document.getElementById('rMult'), rot=document.getElementById('rot');
+  const read=document.getElementById('readout4'), flag=document.getElementById('flag4'), pause=document.getElementById('pause4');
+  let run=true, t=0, sublon=0; // deg
+
+  c.addEventListener('click',e=>{
+    const r=c.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+    const {w,h}=fit(c,ctx); const lon = (x/w)*360 - 180; sublon=lon;
+  });
+
+  function rScale(){
+    const cls=rClass.value; const mult= (+rMult.value)/10; // 1.0..9.9
+    const base={C:1,M:3,X:5}[cls]; // R1,R3,R5 rough
+    const r = base + (mult>5?1:0);
+    return clamp(Math.round(r),1,5);
+  }
+
+  function draw(){
+    const {w,h}=fit(c,ctx); ctx.clearRect(0,0,w,h);
+    // globe
+    const cx=w/2, cy=h/2, R=Math.min(w,h)*0.42;
+    const g=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.2,cx,cy,R);
+    g.addColorStop(0,'#0f2b55'); g.addColorStop(1,'#061a3b');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+
+    // graticule
+    ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1;
+    for(let la=10; la<=80; la+=10){ ctx.beginPath(); ctx.arc(cx,cy,R*(la/90),0,Math.PI*2); ctx.stroke(); }
+    for(let k=0;k<12;k++){ const a=k*Math.PI/6; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*R, cy+Math.sin(a)*R); ctx.stroke(); }
+
+    // rotation
+    const speed=+rot.value; sublon = (sublon + 0.05*speed) % 360;
+
+    // day/night terminator from subsolar lon
+    const sub = (sublon/180)*Math.PI;
+    ctx.fillStyle='rgba(0,0,0,.30)';
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R, sub+Math.PI*0.5, sub+Math.PI*1.5); ctx.closePath(); ctx.fill(); // night sector
+
+    // blackout strength on day side
+    const Rlvl=rScale(); // 1..5
+    for(let i=0;i<180;i++){
+      const a = sub - Math.PI*0.5 + (i/179)*Math.PI; // day arc
+      const strength = (1 - Math.abs(i-90)/90); // center strongest
+      const k = (Rlvl/5)*strength;
+      const rin = R*0.2, rout=R*(0.95 - 0.1*(1-strength));
+      ctx.strokeStyle = `rgba(255,120,120,${0.18+0.35*k})`;
+      ctx.lineWidth = 2+8*k;
+      ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*rin, cy+Math.sin(a)*rin);
+      ctx.lineTo(cx+Math.cos(a)*rout, cy+Math.sin(a)*rout); ctx.stroke();
+    }
+
+    // legend
+    const labs=['R1 minor','R2 moderate','R3 strong','R4 severe','R5 extreme'];
+    read.textContent = `Class: ${rClass.value}${(+rMult.value/10).toFixed(1)} · ${labs[Rlvl-1]} · HF degraded over daylight hemisphere `;
+    badge(flag, Rlvl>=4?'bad':Rlvl>=3?'warn':'ok', Rlvl>=4?'critical':Rlvl>=3?'impact':'notice');
+
+    if(run){ t+=1; requestAnimationFrame(draw); }
+  }
+  [rClass,rMult,rot].forEach(el=>el.addEventListener('input',()=>{ if(!run) draw(); }));
+  pause.onclick=()=>{run=!run; pause.textContent=run?'Pause':'Resume'; if(run) draw();};
+  draw();
+})();
+</script>
+</body>
+</html>
