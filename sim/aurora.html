@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Space Weather Simulators — Animated</title>
+<style>
+  :root{--bg:#0a0e1a;--card:#1a2540;--text:#e9f2ff;--accent:#9CFF6E;--border:rgba(156,255,110,.3)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:ui-rounded,system-ui,sans-serif;background:linear-gradient(180deg,#0a0e1a,#1a1f3a);color:var(--text);min-height:100vh;padding:20px}
+  .container{max-width:1200px;margin:0 auto}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+  h1{font-size:2rem;color:var(--accent)}
+  a.back{padding:10px 18px;border:2px solid var(--border);border-radius:12px;color:var(--accent);text-decoration:none;background:rgba(156,255,110,.15)}
+  .section{margin-top:28px}
+  .card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:18px}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:16px}
+  canvas{width:100%;height:420px;display:block;border-radius:12px;background:#081528}
+  .controls .row{margin-bottom:14px}
+  label{display:block;font-weight:800;font-size:.95rem;color:var(--accent);margin-bottom:6px}
+  input[type="range"],select{width:100%}
+  p{line-height:1.5;margin-top:10px}
+  .note{background:rgba(156,255,110,.1);padding:10px;border-radius:10px}
+  .value{font-family:ui-monospace,Menlo,monospace;font-size:.9rem;opacity:.95}
+  .btn{background:linear-gradient(180deg,#2e8cff,#1e6bd6);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
+  .btn.secondary{background:linear-gradient(180deg,#6fe6c2,#3abf9e);color:#00372b}
+  .btnrow{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .dyk{margin-top:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px}
+  .dyk h3{font-size:1rem;color:var(--accent);margin-bottom:6px}
+  .quiz{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .quiz button{background:rgba(156,255,110,.18);color:var(--accent);border:1px solid var(--border);border-radius:10px;padding:6px 10px;font-weight:800;cursor:pointer}
+  .quiz .ok{color:#0f5132;background:rgba(111,230,194,.2);border-color:rgba(111,230,194,.5)}
+  .quiz .no{color:#842029;background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.5)}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}canvas{height:340px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a class="back" href="..">← Back</a>
+    <h1> 
+      <!-- <a href="https://dbxdrgsl.github.io" target="_blank"> ~</a>  -->
+      <a target="_blank"> ~</a> 
+      / 
+      <a href = "..">Space Weather Simulators</a> / <a href="#">Aurora Simulator</a> / </h1>
+  </div>
+
+  <!-- 1) Particle → Aurora -->
+  <div class="section card">
+    <h2>Simulator 1 — Particle → Aurora</h2>
+    <p class="note">Charged particles follow magnetic field lines into the polar atmosphere and glow.</p>
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <canvas id="spaceCanvas"></canvas>
+        <div id="tooltip" style="position:absolute;display:none"></div>
+        <div class="btnrow">
+          <button id="pause1" class="btn secondary">Pause</button>
+          <button id="flare1" class="btn">Trigger Flare</button>
+          <span class="value" id="status1">running · Wind 420 · Flare 5 · Tilt 18°</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="swSpeed">Solar Wind Speed</label>
+          <input id="swSpeed" type="range" min="200" max="800" step="10" value="420">
+          <div class="value" id="swSpeedVal">420 km/s</div>
+        </div>
+        <div class="row">
+          <label for="flare">Flare Strength</label>
+          <input id="flare" type="range" min="0" max="10" step="1" value="5">
+          <div class="value" id="flareVal">5</div>
+        </div>
+        <div class="row">
+          <label for="tilt">Magnetic Tilt</label>
+          <input id="tilt" type="range" min="0" max="60" step="1" value="18">
+          <div class="value" id="tiltVal">18°</div>
+        </div>
+      </div>
+    </div>
+    <div class="dyk">
+      <h3>Did you know?</h3>
+      <p>Auroras cluster near the poles because particles spiral along Earth’s magnetic field lines.</p>
+      <div class="quiz" data-quiz="q1">
+        <span class="value">Quiz:</span>
+        <button data-correct="false">Near the equator</button>
+        <button data-correct="true">Near the poles</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2) Aurora Color Mixer -->
+  <div class="section card">
+    <h2>Simulator 2 — Aurora Color Mixer</h2>
+    <p>Energy + altitude + gas type set the color blend. Oxygen → green/red. N₂ → blue/purple. Continuous flow.</p>
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <canvas id="colorCanvas"></canvas>
+        <div class="btnrow">
+          <button id="pause2" class="btn secondary">Pause</button>
+          <span class="value" id="readout2">E=55 · Peak≈160 km · Mix=O+N₂</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="energy">Particle Energy</label>
+          <input id="energy" type="range" min="0" max="100" value="55">
+        </div>
+        <div class="row">
+          <label for="altDist">Altitude Peak (km)</label>
+          <input id="altDist" type="range" min="90" max="300" value="160">
+        </div>
+        <div class="row">
+          <label for="species">Species Mix</label>
+          <select id="species">
+            <option value="O">Oxygen only</option>
+            <option value="N2">Nitrogen only</option>
+            <option value="mix" selected>O + N₂ (mixed)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="dyk">
+      <h3>Did you know?</h3>
+      <p>Red aurora often occurs higher than green, usually above ~200 km.</p>
+      <div class="quiz" data-quiz="q2">
+        <span class="value">Quiz:</span>
+        <button data-correct="true">Higher than green</button>
+        <button data-correct="false">Lower than green</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3) Polar Aurora Globe -->
+  <div class="section card">
+    <h2>Simulator 3 — Polar Aurora Globe</h2>
+    <p>The auroral oval widens toward lower latitudes as Kp increases. Night sector rotates.</p>
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <canvas id="polarCanvas" title="Click to drop a city pin"></canvas>
+        <div class="btnrow">
+          <button id="pause3" class="btn secondary">Pause</button>
+          <span class="value" id="readout3">Kp≈4.2 · LT 22h · Rotating</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="kpCtrl">Kp (center)</label>
+          <input id="kpCtrl" type="range" min="0" max="9" value="4">
+        </div>
+        <div class="row">
+          <label for="speedCtrl">Animation Speed</label>
+          <input id="speedCtrl" type="range" min="0.2" max="2.0" step="0.1" value="1.0">
+        </div>
+      </div>
+    </div>
+    <div class="dyk">
+      <h3>Did you know?</h3>
+      <p>Higher Kp pushes the oval equatorward, making auroras visible farther from the poles.</p>
+      <div class="quiz" data-quiz="q3">
+        <span class="value">Quiz:</span>
+        <button data-correct="false">Poleward</button>
+        <button data-correct="true">Equatorward</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Utilities ===== */
+const DPR = () => window.devicePixelRatio || 1;
+function fitCanvas(c,ctx){const w=c.clientWidth||800,h=c.clientHeight||420;c.width=Math.round(w*DPR());c.height=Math.round(h*DPR());ctx.setTransform(DPR(),0,0,DPR(),0,0);return {w,h}}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+/* ===== Did-you-know micro-quiz ===== */
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.quiz button'); if(!btn) return;
+  const box=btn.closest('.quiz'); const res=box.querySelector('[data-result]');
+  const correct = btn.getAttribute('data-correct')==='true';
+  res.textContent = correct ? 'Correct ✅' : 'Try again';
+  res.className = 'value ' + (correct?'ok':'no');
+});
+
+/* ===== 1) Particle → Aurora (autostart) ===== */
+const State={variables:{swSpeed:420,flare:5,tilt:18,paused:false}};
+(function(){
+  const cnv=document.getElementById('spaceCanvas'); const ctx=cnv.getContext('2d');
+  let particles=[], auroras=[], hover=[], last=performance.now(), raf, running=true;
+  function speedToPx(v){v=clamp(v,200,800);return (v-200)/600*110+30}
+  function spawn(n,f){for(let i=0;i<n;i++){const y=Math.random()*cnv.height;particles.push({x:-20-Math.random()*100,y, vx:(speedToPx(State.variables.swSpeed)*(0.85+0.3*Math.random()))*f, vy:(Math.random()-0.5)*8, age:0, life:8+Math.random()*6, q:Math.random()>0.8, hit:false})}}
+  function drawStatic(w,h){
+    ctx.clearRect(0,0,w,h); ctx.fillStyle='#071428'; ctx.fillRect(0,0,w,h);
+    const sx=Math.round(w*.15), sy=Math.round(h*.5), sr=Math.round(Math.min(w,h)*.35);
+    const sg=ctx.createRadialGradient(sx,sy,5,sx,sy,sr*1.6); sg.addColorStop(0,'#ffd27d'); sg.addColorStop(.4,'#ff9a40'); sg.addColorStop(1,'rgba(255,120,40,.15)');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
+    const ex=Math.round(w*.85), ey=Math.round(h*.5), er=Math.round(Math.min(w,h)*.09);
+    const eg=ctx.createRadialGradient(ex-er/2,ey-er/2,er/4,ex,ey,er*1.2); eg.addColorStop(0,'#4eaaff'); eg.addColorStop(1,'#0a2a73');
+    ctx.fillStyle=eg; ctx.beginPath(); ctx.arc(ex,ey,er,0,Math.PI*2); ctx.fill();
+    const mr=er*3.6*(1+(State.variables.tilt/60)); const fg=ctx.createRadialGradient(ex,ey,er*.6,ex,ey,mr);
+    fg.addColorStop(0,'rgba(120,210,255,.06)'); fg.addColorStop(.6,'rgba(120,210,255,.02)');
+    ctx.fillStyle=fg; ctx.beginPath(); ctx.ellipse(ex,ey,mr,mr*.7,-State.variables.tilt*Math.PI/180,0,Math.PI*2); ctx.fill();
+    return {ex,ey,er}
+  }
+  function aurora(ex,ey,ang){auroras.push({a:ang,t:3,s:.5+Math.random()*1.5})}
+  function loop(now){
+    const {w,h}=fitCanvas(cnv,ctx); const dt=clamp((now-last)/1000,0,0.05); last=now; hover=[];
+    const {ex,ey,er}=drawStatic(w,h);
+    for(const p of particles){
+      const dx=ex-p.x, dy=ey-p.y, d=Math.hypot(dx,dy), inf=Math.max(0,1-d/(6*er))*(1+State.variables.tilt/40), pole=Math.sign(dy)||1;
+      p.vy += pole*inf*.08*(p.q?1.5:1.0); if(d<4.2*er){p.vx*=(1-.02*inf); p.vy*=(1-.01*inf)} p.x+=p.vx*dt; p.y+=p.vy*dt; p.age+=dt;
+      if(!p.hit && d<1.2*er && p.q){p.hit=true; aurora(ex,ey,Math.atan2(dy,dx))}
+    }
+    particles=particles.filter(p=>p.age<p.life && p.x<w+60 && p.y>-60 && p.y<h+60);
+    for(const p of particles){ctx.beginPath();ctx.fillStyle=p.q?'rgba(255,230,120,.95)':'rgba(200,230,255,.9)';ctx.arc(p.x,p.y,p.q?2.6:1.6,0,Math.PI*2);ctx.fill()}
+    if(Math.random()<.02)spawn(1,1);
+    if(Math.random()<.006*(State.variables.flare/2))spawn(8+Math.floor(State.variables.flare*3),1+State.variables.flare/8);
+    for(const a of auroras){
+      const r=er*(1.5+.5*a.s), px=ex+Math.cos(a.a)*r, py=ey+Math.sin(a.a)*r;
+      const g=ctx.createRadialGradient(px,py,5,px,py,60); g.addColorStop(0,'rgba(120,255,200,.5)'); g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,60,0,Math.PI*2); ctx.fill(); a.t-=dt;
+    }
+    auroras=auroras.filter(a=>a.t>0);
+    if(running) raf=requestAnimationFrame(loop);
+  }
+  const sw=document.getElementById('swSpeed'), fl=document.getElementById('flare'), ti=document.getElementById('tilt');
+  const sv=document.getElementById('swSpeedVal'), fv=document.getElementById('flareVal'), tv=document.getElementById('tiltVal'), st=document.getElementById('status1');
+  sw.oninput=e=>{State.variables.swSpeed=+e.target.value; sv.textContent=State.variables.swSpeed+' km/s'; st.textContent=`running · Wind ${State.variables.swSpeed} · Flare ${State.variables.flare} · Tilt ${State.variables.tilt}°`};
+  fl.oninput=e=>{State.variables.flare=+e.target.value; fv.textContent=State.variables.flare; st.textContent=`running · Wind ${State.variables.swSpeed} · Flare ${State.variables.flare} · Tilt ${State.variables.tilt}°`};
+  ti.oninput=e=>{State.variables.tilt=+e.target.value; tv.textContent=State.variables.tilt+'°'; st.textContent=`running · Wind ${State.variables.swSpeed} · Flare ${State.variables.flare} · Tilt ${State.variables.tilt}°`};
+  document.getElementById('flare1').onclick=()=>spawn(10+Math.floor(State.variables.flare*6),1+State.variables.flare*.6);
+  document.getElementById('pause1').onclick=()=>{running=!running; document.getElementById('pause1').textContent=running?'Pause':'Resume'; if(running) {last=performance.now(); loop(last);} };
+  spawn(60,1); last=performance.now(); loop(last);
+})();
+
+/* ===== 2) Color Mixer — continuous waves ===== */
+(function(){
+  const c=document.getElementById('colorCanvas'); const ctx=c.getContext('2d');
+  const energy=document.getElementById('energy'), alt=document.getElementById('altDist'), species=document.getElementById('species');
+  const readout=document.getElementById('readout2'); let t=0, running=true, raf;
+  function draw(){
+    const {w,h}=fitCanvas(c,ctx); ctx.clearRect(0,0,w,h);
+    const E=+energy.value, A=+alt.value, S=species.value;
+    const gW=Math.max(0,1-Math.abs(A-130)/80)*(0.6+E/300);
+    const rW=Math.max(0,(A-170)/130);
+    const bW=Math.max(0,1-(A-100)/180)*(S==='N2'?1:(S==='mix'?0.7:0.35))*(E/80);
+    const sum=gW+rW+bW+1e-6; const gN=gW/sum, rN=rW/sum, bN=bW/sum;
+
+    const baseY=h*0.92, peakH=120+(A-90)*0.9, flow=0.002+E*0.00006;
+    for(let i=0;i<60;i++){
+      const k=i/59, y=baseY - peakH*k;
+      const amp=18+44*(1-k)+E*0.18;
+      ctx.beginPath();
+      for(let x=0;x<=w;x+=8){
+        const yoff = Math.sin(t*1.6 + k*2.8 + x*flow)*(amp*(0.7+0.3*Math.sin(t+k*3)));
+        x===0?ctx.moveTo(0,y+yoff):ctx.lineTo(x,y+yoff);
+      }
+      const mix=ctx.createLinearGradient(0,y,w,y);
+      mix.addColorStop(0, `rgba(124,244,255,${0.14*(bN+0.12)})`);
+      mix.addColorStop(.5,`rgba(156,255,110,${0.20*(gN+0.10)})`);
+      mix.addColorStop(1, `rgba(255,120,120,${0.16*(rN+0.08)})`);
+      ctx.strokeStyle=mix; ctx.lineWidth=5.5; ctx.stroke();
+    }
+    const vy = baseY - (200 + (A-90));
+    const vg = ctx.createRadialGradient(w*0.5,vy,20,w*0.5,vy,260);
+    vg.addColorStop(0,`rgba(255,120,120,${0.22*rN})`);
+    vg.addColorStop(.5,`rgba(156,255,110,${0.20*gN})`);
+    vg.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=vg; ctx.beginPath(); ctx.arc(w*0.5,vy,260,0,Math.PI*2); ctx.fill();
+
+    readout.textContent = `E=${E} · Peak≈${Math.round(A)} km · Mix=${S==='mix'?'O+N₂':S}`;
+    if(running){ t+=0.02; raf=requestAnimationFrame(draw); }
+  }
+  ['input','change'].forEach(evt=>{
+    energy.addEventListener(evt,()=>{ if(!running) draw(); });
+    alt.addEventListener(evt,()=>{ if(!running) draw(); });
+    species.addEventListener(evt,()=>{ if(!running) draw(); });
+  });
+  document.getElementById('pause2').onclick=()=>{running=!running; document.getElementById('pause2').textContent=running?'Pause':'Resume'; if(running) draw();};
+  draw();
+})();
+
+/* ===== 3) Polar Aurora Globe — nonstop animated polar map ===== */
+(function(){
+  const c=document.getElementById('polarCanvas'); const ctx=c.getContext('2d');
+  const kpCtrl=document.getElementById('kpCtrl'); const speedCtrl=document.getElementById('speedCtrl'); const readout=document.getElementById('readout3');
+  let t=0, running=true, city=null, raf;
+
+  c.addEventListener('click',e=>{
+    const r=c.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+    const {w,h}=fitCanvas(c,ctx); const cx=w/2, cy=h/2, R=Math.min(w,h)*0.46;
+    const dx=x*DPR()-cx, dy=y*DPR()-cy, rho=Math.hypot(dx,dy);
+    if(rho>R) return;
+    const rNorm = rho/R; const colat = rNorm*Math.PI/2; const lat = 90 - colat*180/Math.PI; const lon = Math.atan2(dy,dx)*180/Math.PI;
+    city={lat,lon};
+  });
+
+  document.getElementById('pause3').onclick=()=>{running=!running; document.getElementById('pause3').textContent=running?'Pause':'Resume'; if(running) draw();};
+
+  function draw(){
+    const {w,h}=fitCanvas(c,ctx); const cx=w/2, cy=h/2, R=Math.min(w,h)*0.46;
+    ctx.clearRect(0,0,w,h);
+    const globeGrad=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.2,cx,cy,R);
+    globeGrad.addColorStop(0,'#0f2b55'); globeGrad.addColorStop(1,'#061a3b');
+    ctx.fillStyle=globeGrad; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
+
+    ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1;
+    for(let lat=10; lat<=80; lat+=10){ const r = R * (lat/90); ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke(); }
+    for(let k=0;k<12;k++){ const ang=k*Math.PI/6 + t*0.05; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(ang)*R, cy+Math.sin(ang)*R); ctx.stroke(); }
+
+    const nightAng = t*0.05;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    ctx.fillStyle='rgba(0,0,0,.28)';
+    ctx.arc(cx,cy,R,nightAng+Math.PI*0.2,nightAng+Math.PI*1.8); ctx.lineTo(cx,cy); ctx.fill();
+
+    const kp0=+kpCtrl.value; const kp = kp0 + 0.7*Math.sin(t*0.02);
+    const rOval = R * (1 - ( (67 - kp*3)/90 ));
+    const thickness = clamp(14 + kp*4, 12, 40);
+
+    const g=ctx.createRadialGradient(cx,cy,rOval-thickness, cx,cy,rOval+thickness*2.2);
+    g.addColorStop(0, 'rgba(124,244,255,0.15)');
+    g.addColorStop(0.45, 'rgba(156,255,110,0.22)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,rOval+thickness*1.6,0,Math.PI*2); ctx.fill();
+
+    const segs = 90;
+    for(let i=0;i<segs;i++){
+      const a0 = (i/segs)*Math.PI*2;
+      const puls = 0.65 + 0.35*Math.sin(t*0.12 + i*0.4);
+      const rIn = rOval - thickness*0.5*puls;
+      const rOut= rOval + thickness*0.7*puls;
+      ctx.strokeStyle = `rgba(${156},${255},${110},${0.38+0.2*puls})`;
+      ctx.lineWidth = 2 + 2*puls;
+      ctx.beginPath(); ctx.moveTo(cx+Math.cos(a0)*rIn, cy+Math.sin(a0)*rIn);
+      ctx.lineTo(cx+Math.cos(a0)*rOut, cy+Math.sin(a0)*rOut); ctx.stroke();
+    }
+
+    if(city){
+      const rCity = R * ( (90 - Math.abs(city.lat)) / 90 );
+      const ang = (city.lon*Math.PI/180) + Math.PI/2;
+      const px = cx + Math.cos(ang)*rCity, py = cy + Math.sin(ang)*rCity;
+      ctx.fillStyle='#ffdf5e'; ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2); ctx.fill();
+      const d = Math.hypot(px-cx, py-cy);
+      const vis = (d > rOval - thickness*0.8) && (d < rOval + thickness*0.8);
+      readout.textContent = `Kp≈${kp.toFixed(1)} · LT ${( (nightAng%(2*Math.PI))/(2*Math.PI)*24 + 24 )%24 |0}h · ${vis?'Visible ✅':'Not visible'} at ${city.lat.toFixed(1)}°, ${city.lon.toFixed(1)}°`;
+    } else {
+      readout.textContent = `Kp≈${kp.toFixed(1)} · LT ${( (nightAng%(2*Math.PI))/(2*Math.PI)*24 + 24 )%24 |0}h · Rotating`;
+    }
+
+    if(running){ t += 0.8*+speedCtrl.value; requestAnimationFrame(draw); }
+  }
+
+  kpCtrl.oninput=()=>{ /* live */ };
+  speedCtrl.oninput=()=>{ /* live */ };
+  document.getElementById('pause3').onclick=()=>{running=!running; document.getElementById('pause3').textContent=running?'Pause':'Resume'; if(running) draw();};
+  draw();
+})();
+</script>
+</body>
+</html>
