@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Farmer GPS Simulator — 3 Live Labs</title>
+<title>Farmer GPS Simulator — 3 Live Labs + Lessons</title>
 <style>
   :root{
     --bg:#0a0e1a;--card:#1a2540;--text:#e9f2ff;--accent:#9CFF6E;--border:rgba(156,255,110,.3);
@@ -31,7 +31,22 @@
   .quiz .ok{color:#0f5132;background:rgba(111,230,194,.2);border-color:rgba(111,230,194,.5)}
   .quiz .no{color:#842029;background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.5)}
 
-  /* LAB 1: Row-Tracker */
+  /* Lesson blocks */
+  .lesson{margin-top:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:14px}
+  .lesson .tabs{display:flex;gap:6px;border-bottom:1px solid rgba(255,255,255,.12);padding:8px}
+  .lesson .tabs button{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:var(--text);cursor:pointer;font-weight:800}
+  .lesson .tabs button.active{outline:2px solid var(--border);background:rgba(156,255,110,.1);color:var(--accent)}
+  .lesson .pane{display:none;padding:12px}
+  .lesson .pane.active{display:block}
+  .concept{display:grid;grid-template-columns:1fr;gap:10px}
+  .concept h4{color:var(--accent);font-size:1.05rem}
+  .concept ul{padding-left:18px;line-height:1.6}
+  .obs{font-size:.95rem;opacity:.9;background:rgba(255,255,255,.05);padding:10px;border-radius:10px;border:1px dashed rgba(255,255,255,.15)}
+  .checkRow{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+  .checkRow button{padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);cursor:pointer;background:rgba(0,0,0,.2);color:var(--text);font-weight:800}
+  .score{font-weight:900;color:var(--accent)}
+
+  /* LAB 1 visuals */
   .fieldBox{height:420px;border-radius:12px;background:linear-gradient(180deg,#173217,#0f2510);position:relative;overflow:hidden}
   .targetLine{position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,.25)}
   .passLine{position:absolute;top:0;left:10%;right:10%;height:2px;background:rgba(255,255,255,.12)}
@@ -44,7 +59,7 @@
   .spark{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle, rgba(156,255,110,.35), transparent 60%);filter:blur(10px);mix-blend-mode:screen;animation:spark 2.2s linear infinite;opacity:.7}
   @keyframes spark{0%{transform:translate(-20%,-20%) scale(.8)}50%{transform:translate(10%,10%) scale(1)}100%{transform:translate(-20%,-20%) scale(.8)}}
 
-  /* LAB 2: Sky-View & DOP */
+  /* LAB 2 visuals */
   .sky{height:420px;border-radius:12px;background:radial-gradient(circle at 50% 60%, #103010, #0c190c);position:relative;overflow:hidden}
   .horizon{position:absolute;left:0;right:0;bottom:0;height:38%;background:linear-gradient(0deg,#0d260d,transparent)}
   .sat{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--blue);box-shadow:0 0 12px rgba(124,244,255,.9)}
@@ -54,12 +69,17 @@
   .dial{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);padding:10px 12px;border-radius:12px}
   .bar{height:8px;border-radius:6px;background:linear-gradient(90deg,var(--ok),var(--warn),var(--bad))}
 
-  /* LAB 3: Error Heatmap */
+  /* LAB 3 visuals */
   .heat{height:420px;border-radius:12px;background:#0f1c0f;position:relative;overflow:hidden;display:grid;grid-template-columns:repeat(24,1fr);grid-auto-rows:1fr;gap:2px;padding:2px}
   .cell{border-radius:4px;transition:transform .12s}
   .cell:hover{transform:scale(1.15)}
   .legend{position:absolute;bottom:10px;left:10px;right:10px;display:flex;gap:8px;align-items:center}
   .grad{height:10px;flex:1;border-radius:8px;background:linear-gradient(90deg,var(--ok),#bfea5e,#ffd166,#ff9b6b,#ff6b6b,#ff3366)}
+
+  /* Final test */
+  .final{display:grid;grid-template-columns:1fr;gap:10px}
+  .final .q{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px}
+  .final .actions{display:flex;gap:10px;align-items:center}
 </style>
 </head>
 <body>
@@ -80,7 +100,7 @@
   <div class="section">
     <div class="title">Follow how space weather bends farm guidance</div>
     <p style="opacity:.9;line-height:1.7;margin-top:6px">
-      These three live labs show: (1) row-tracking drift from ionospheric delay, (2) sky geometry & scintillation knocking satellites out, and (3) a day-long error heatmap driven by TEC and storm level.
+      These three live labs show: (1) row-tracking drift from ionospheric delay, (2) sky geometry & scintillation knocking satellites out, and (3) a day-long error heatmap driven by TEC and storm level. Each lab now includes a short lesson: definition, properties, observations, and a guided check.
     </p>
   </div>
 
@@ -111,10 +131,53 @@
         <div class="note">
           <p><b>Did you know?</b> At L1, <u>1 TECU ≈ 0.163 m</u> of range error. Dual-frequency subtracts most ionosphere; RTK adds cm-level corrections.</p>
           <div class="quiz">
-            <span class="val">Quiz:</span>
+            <span class="val">Quick check:</span>
             <button data-q="q1" data-ok="true">Higher TEC → larger delay</button>
             <button data-q="q1" data-ok="false">Higher TEC → smaller delay</button>
             <span class="val" data-q-res="q1"></span>
+          </div>
+
+          <!-- Lesson tabs -->
+          <div class="lesson" id="lesson1">
+            <div class="tabs">
+              <button class="active" data-tab="#l1-def">Definition</button>
+              <button data-tab="#l1-prop">Properties</button>
+              <button data-tab="#l1-obs">Observations</button>
+              <button data-tab="#l1-test">Guided test</button>
+            </div>
+            <div class="pane active" id="l1-def">
+              <div class="concept">
+                <h4>Ionospheric delay</h4>
+                <p>The ionosphere is a charged plasma that slows GNSS radio waves. Extra path delay shifts the computed range, moving the guidance line.</p>
+              </div>
+            </div>
+            <div class="pane" id="l1-prop">
+              <div class="concept">
+                <h4>Key properties</h4>
+                <ul>
+                  <li>Delay ∝ TEC (total electrons along the path).</li>
+                  <li>Frequency dependent: L1 affected more than L2/L5.</li>
+                  <li>Mitigation: dual-frequency combination, RTK/PPP corrections.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="pane" id="l1-obs">
+              <div class="concept">
+                <h4>What to notice in the sim</h4>
+                <div class="obs">Raise <b>Ionospheric Activity</b>. Drift grows. Switch to <b>Dual</b> or <b>RTK</b>. Error circle shrinks. Increase <b>Speed</b>. Tracking worsens slightly.</div>
+              </div>
+            </div>
+            <div class="pane" id="l1-test">
+              <div class="concept">
+                <h4>Guided test</h4>
+                <div class="checkRow" data-group="l1">
+                  <button data-correct>Dual-frequency reduces ionosphere.</button>
+                  <button>Single-frequency removes ionosphere.</button>
+                  <button data-correct>RTK can reach cm-level.</button>
+                </div>
+                <div class="score" data-score="l1">Score: 0/2</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -168,10 +231,52 @@
         <div class="note">
           <p><b>Did you know?</b> Poor sky geometry (high PDOP) magnifies any measurement error. Scintillation (S4) during storms makes satellites “blink.”</p>
           <div class="quiz">
-            <span class="val">Quiz:</span>
+            <span class="val">Quick check:</span>
             <button data-q="q2" data-ok="true">Higher PDOP → worse accuracy</button>
             <button data-q="q2" data-ok="false">Higher PDOP → better accuracy</button>
             <span class="val" data-q-res="q2"></span>
+          </div>
+
+          <div class="lesson" id="lesson2">
+            <div class="tabs">
+              <button class="active" data-tab="#l2-def">Definition</button>
+              <button data-tab="#l2-prop">Properties</button>
+              <button data-tab="#l2-obs">Observations</button>
+              <button data-tab="#l2-test">Guided test</button>
+            </div>
+            <div class="pane active" id="l2-def">
+              <div class="concept">
+                <h4>Dilution of Precision (PDOP) & Scintillation (S4)</h4>
+                <p>PDOP summarizes satellite geometry. Low PDOP means satellites are well spread. S4 indicates signal amplitude fluctuation from ionospheric turbulence.</p>
+              </div>
+            </div>
+            <div class="pane" id="l2-prop">
+              <div class="concept">
+                <h4>Key properties</h4>
+                <ul>
+                  <li>More constellations ↓ PDOP on average.</li>
+                  <li>High mask angle ↑ PDOP by removing low-elevation satellites.</li>
+                  <li>S4 ≈ 0 on quiet days, rises during storms and at low elevation paths.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="pane" id="l2-obs">
+              <div class="concept">
+                <h4>What to notice in the sim</h4>
+                <div class="obs">Increase <b>Storm Scale</b>. Some satellites blink red and unlock. Raise <b>Mask Angle</b>. Locked count falls and PDOP rises. Add <b>Galileo</b>. PDOP improves.</div>
+              </div>
+            </div>
+            <div class="pane" id="l2-test">
+              <div class="concept">
+                <h4>Guided test</h4>
+                <div class="checkRow" data-group="l2">
+                  <button data-correct>Lower PDOP is better.</button>
+                  <button>Higher PDOP is better.</button>
+                  <button data-correct>More constellations usually lower PDOP.</button>
+                </div>
+                <div class="score" data-score="l2">Score: 0/2</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -210,10 +315,52 @@
         <div class="note" style="position:absolute;top:10px;left:10px;right:10px">
           <p><b>Did you know?</b> TEC usually peaks near local noon and after sunset. During solar storms, the whole curve lifts.</p>
           <div class="quiz">
-            <span class="val">Quiz:</span>
+            <span class="val">Quick check:</span>
             <button data-q="q3" data-ok="true">Storm → higher errors all day</button>
             <button data-q="q3" data-ok="false">Storm → lower errors all day</button>
             <span class="val" data-q-res="q3"></span>
+          </div>
+
+          <div class="lesson" id="lesson3">
+            <div class="tabs">
+              <button class="active" data-tab="#l3-def">Definition</button>
+              <button data-tab="#l3-prop">Properties</button>
+              <button data-tab="#l3-obs">Observations</button>
+              <button data-tab="#l3-test">Guided test</button>
+            </div>
+            <div class="pane active" id="l3-def">
+              <div class="concept">
+                <h4>TEC & diurnal pattern</h4>
+                <p>TEC counts electrons along a GNSS path. Solar radiation and geometry create daily peaks that raise positioning error when uncorrected.</p>
+              </div>
+            </div>
+            <div class="pane" id="l3-prop">
+              <div class="concept">
+                <h4>Key properties</h4>
+                <ul>
+                  <li>Two peaks common: around noon and post-sunset.</li>
+                  <li>Storms add a baseline lift across hours.</li>
+                  <li>Better receivers scale the delay down strongly.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="pane" id="l3-obs">
+              <div class="concept">
+                <h4>What to notice in the sim</h4>
+                <div class="obs">Increase <b>Storm Lift</b>. Entire heatmap shifts to warmer colors. Switch <b>Receiver</b> to <b>RTK</b>. Colors cool down.</div>
+              </div>
+            </div>
+            <div class="pane" id="l3-test">
+              <div class="concept">
+                <h4>Guided test</h4>
+                <div class="checkRow" data-group="l3">
+                  <button data-correct>RTK lowers the impact of TEC.</button>
+                  <button>TEC is number of satellites.</button>
+                  <button data-correct>Storms lift errors at most hours.</button>
+                </div>
+                <div class="score" data-score="l3">Score: 0/2</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -236,11 +383,63 @@
       </div>
     </div>
   </div>
+
+  <!-- ============= FINAL LESSON TEST ============= -->
+  <div class="section">
+    <div class="title">End of Lesson — Mixed Quiz</div>
+    <div class="final" id="final">
+      <div class="q" data-mq>
+        <div>1) Which setting cuts ionospheric delay the most?</div>
+        <div class="checkRow" data-group="f1">
+          <button>Single-frequency</button>
+          <button data-correct>RTK</button>
+          <button>Raising mask angle</button>
+        </div>
+      </div>
+      <div class="q" data-mq>
+        <div>2) PDOP mainly depends on…</div>
+        <div class="checkRow" data-group="f2">
+          <button>TECU value</button>
+          <button data-correct>Satellite geometry</button>
+          <button>Receiver speed</button>
+        </div>
+      </div>
+      <div class="q" data-mq>
+        <div>3) Scintillation (high S4) causes…</div>
+        <div class="checkRow" data-group="f3">
+          <button data-correct>Signal fades and loss of lock</button>
+          <button>Lower PDOP</button>
+          <button>More satellites become visible</button>
+        </div>
+      </div>
+      <div class="q" data-mq>
+        <div>4) On stormy days the heatmap mostly…</div>
+        <div class="checkRow" data-group="f4">
+          <button data-correct>Shifts to warmer colors across many hours</button>
+          <button>Shows cooler colors than quiet days</button>
+          <button>Becomes blank</button>
+        </div>
+      </div>
+      <div class="q" data-mq>
+        <div>5) Adding Galileo to GPS + GLONASS tends to…</div>
+        <div class="checkRow" data-group="f5">
+          <button data-correct>Lower PDOP</button>
+          <button>Raise TEC</button>
+          <button>Increase mask angle</button>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="gradeAll" class="back-btn">Grade lesson</button>
+        <span class="score" id="finalScore">Score: 0/5</span>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-/* ===== helpers & quiz ===== */
+/* ===== helpers & quick checks ===== */
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
 document.addEventListener('click',(e)=>{
   const b=e.target.closest('.quiz button'); if(!b) return;
   const ok=b.dataset.ok==='true', id=b.dataset.q;
@@ -249,12 +448,41 @@ document.addEventListener('click',(e)=>{
   out.className='val '+(ok?'ok':'no');
 });
 
+/* ===== lesson tab logic ===== */
+function bindTabs(root){
+  const tabs=[...root.querySelectorAll('.tabs button')];
+  tabs.forEach(btn=>btn.addEventListener('click',()=>{
+    tabs.forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    const paneId=btn.getAttribute('data-tab');
+    root.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+    root.querySelector(paneId).classList.add('active');
+  }));
+}
+['lesson1','lesson2','lesson3'].forEach(id=>bindTabs(document.getElementById(id)));
+
+/* ===== per-concept guided tests ===== */
+function bindGuided(groupKey){
+  const row=document.querySelector(`.checkRow[data-group="${groupKey}"]`);
+  const scoreEl=document.querySelector(`[data-score="${groupKey}"]`);
+  let correct=0, total=[...row.querySelectorAll('[data-correct]')].length;
+  row.addEventListener('click',(e)=>{
+    const b=e.target.closest('button'); if(!b) return;
+    if(b.hasAttribute('data-correct')){ b.classList.add('ok'); correct=Math.min(total,correct+1); }
+    else{ b.classList.add('no'); }
+    scoreEl.textContent=`Score: ${correct}/${total}`;
+  });
+}
+['l1','l2','l3'].forEach(bindGuided);
+
 /* ===== LAB 1: Row-Tracker ===== */
 const rtField=document.getElementById('rtField');
 const rtTr=document.getElementById('rtTractor');
 const rtErr=document.getElementById('rtErr');
-const rtAcc=document.getElementById('rtAcc'); const rtLamp=document.getElementById('rtLamp');
-const rtMode=document.getElementById('rtMode'); const rtDelay=document.getElementById('rtDelay'); const rtTEC=document.getElementById('rtTEC');
+const rtAcc=document.getElementById('rtAcc');
+const rtMode=document.getElementById('rtMode');
+const rtDelay=document.getElementById('rtDelay');
+const rtTEC=document.getElementById('rtTEC');
 const rtRx=document.getElementById('rtRx'), rtIono=document.getElementById('rtIono'), rtSat=document.getElementById('rtSat'), rtSpd=document.getElementById('rtSpd');
 const rtIonoV=document.getElementById('rtIonoV'), rtSatV=document.getElementById('rtSatV'), rtSpdV=document.getElementById('rtSpdV');
 
@@ -333,7 +561,7 @@ function updateSky(){
   });
   lockB.textContent=`Locked ${locked}`;
 
-  // crude PDOP model: better with more spread & count
+  // crude PDOP model
   const spreadScore = Math.min(1, locked/12);
   const maskPenalty = mask/40;
   const pdop = clamp(1.2 + 2.8*(1-spreadScore) + 1.4*maskPenalty, 1, 6);
@@ -350,7 +578,7 @@ const hmLift=document.getElementById('hmLift'), hmLiftV=document.getElementById(
 const hmRx=document.getElementById('hmRx');
 const hmNote=document.getElementById('hmNote');
 
-// build grid (24 hours x 12 latitude bands as proxy for geometry change)
+// build grid (24 hours x 12 latitude bands as proxy)
 const H=12, W=24; // rows x cols
 function buildHeat(){
   heat.innerHTML='';
@@ -362,16 +590,9 @@ function buildHeat(){
 }
 function rxScale(mode){ return mode==='single'?1 : mode==='dual'?0.35 : 0.08; }
 function colorForErr(m){
-  // map meters to gradient 0..1
   const t = clamp(m/10, 0, 1);
-  // interpolate: ok -> warn -> bad
-  if(t<0.5){
-    const k=t/0.5; // 0..1
-    return `rgb(${Math.round(156+(255-156)*k)}, ${Math.round(255-(255-159)*k)}, ${Math.round(110-(110-102)*k)})`;
-  }else{
-    const k=(t-0.5)/0.5;
-    return `rgb(${Math.round(255)}, ${Math.round(209-(209-107)*k)}, ${Math.round(102-(102-107)*k)})`;
-  }
+  if(t<0.5){ const k=t/0.5; return `rgb(${Math.round(156+(255-156)*k)}, ${Math.round(255-(255-159)*k)}, ${Math.round(110-(110-102)*k)})`; }
+  const k=(t-0.5)/0.5; return `rgb(255, ${Math.round(209-(209-107)*k)}, ${Math.round(102-(102-107)*k)})`;
 }
 function updateHeat(){
   const base=+hmTEC.value, lift=+hmLift.value, mode=hmRx.value;
@@ -380,12 +601,10 @@ function updateHeat(){
 
   heat.querySelectorAll('.cell').forEach(cell=>{
     const r=+cell.dataset.r, c=+cell.dataset.c; // r: pseudo-lat band 0..11, c: hour 0..23
-    // diurnal TEC shape (two lobes near noon & post-sunset)
     const hourAmp = 0.4 + 0.6*Math.max( Math.exp(-Math.pow((c-12)/5,2)), Math.exp(-Math.pow((c-19)/4,2)) );
-    const latScale = 0.8 + 0.4*Math.sin((r/H)*Math.PI); // higher error mid-bands
+    const latScale = 0.8 + 0.4*Math.sin((r/H)*Math.PI);
     const TECU = base*hourAmp*latScale + lift;
     const delay = 0.163 * TECU * rxScale(mode); // meters
-    // PDOP-like factor: worse at night (fewer sats in view proxy)
     const pd = 1.3 + 0.9*(1 - Math.exp(-Math.pow((c-3)/6,2))) * (c<6?1:0) + 0.6*(c>18?1:0);
     const err = delay * pd;
     cell.style.background = colorForErr(err);
@@ -394,6 +613,29 @@ function updateHeat(){
 }
 ['input','change'].forEach(ev=>[hmTEC,hmLift,hmRx].forEach(el=>el.addEventListener(ev,updateHeat)));
 buildHeat(); setInterval(updateHeat,600); updateHeat();
+
+/* ===== Final grading ===== */
+function gradeGroup(group){
+  const row=document.querySelector(`.checkRow[data-group="${group}"]`);
+  const correct=row.querySelectorAll('[data-correct].ok').length;
+  const total=row.querySelectorAll('[data-correct]').length;
+  return {correct,total};
+}
+
+document.getElementById('gradeAll').addEventListener('click',()=>{
+  const groups=['f1','f2','f3','f4','f5'];
+  let correct=0,total=0;
+  groups.forEach(g=>{ const r=gradeGroup(g); correct+=r.correct; total+=r.total; });
+  document.getElementById('finalScore').textContent=`Score: ${correct}/${total}`;
+});
+
+// click handler for final check rows
+[...document.querySelectorAll('.final .checkRow')].forEach(row=>{
+  row.addEventListener('click',(e)=>{
+    const b=e.target.closest('button'); if(!b) return;
+    if(b.hasAttribute('data-correct')) b.classList.add('ok'); else b.classList.add('no');
+  });
+});
 </script>
 </body>
 </html>

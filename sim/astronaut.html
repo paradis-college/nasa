@@ -29,7 +29,7 @@
   .note{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-top:10px}
   .dyk{margin-top:12px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);border-radius:12px;padding:12px}
   .dyk h3{font-size:.95rem;color:var(--accent);margin-bottom:6px}
-  .quiz{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .quiz{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center}
   .quiz button{background:rgba(178,141,255,.18);color:var(--accent);border:1px solid var(--border);border-radius:10px;padding:6px 10px;font-weight:800;cursor:pointer}
   .quiz .ok{color:#0f5132;background:rgba(111,230,194,.2);border-color:rgba(111,230,194,.5)}
   .quiz .no{color:#842029;background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.5)}
@@ -39,6 +39,16 @@
   .pill.bad{background:rgba(255,107,107,.15);color:var(--bad);animation:blink 1s infinite}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.75}}
   @media(max-width:900px){.grid{grid-template-columns:1fr}canvas{height:340px}}
+
+  /* Lesson blocks */
+  .lesson{margin-top:14px}
+  details.lesson {border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.03);padding:10px}
+  details.lesson>summary{cursor:pointer;font-weight:800;color:var(--cyan);list-style:none}
+  details.lesson>summary::-webkit-details-marker{display:none}
+  .concept{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  .concept h4{color:var(--accent);margin-bottom:6px}
+  .concept p{font-size:.95rem;line-height:1.35}
+  @media(max-width:900px){.concept{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -54,7 +64,43 @@
     </h1>
   </div>
 
-  <!-- SIM 1: SPE Particle Storm vs Station Shelter (live dosimeter) -->
+  <!-- Overview lesson -->
+  <div class="section card">
+    <h2>Lesson overview</h2>
+    <p class="note">Goal: read dose, reduce risk, keep systems online. You will model storms, sheltering, materials, and avionics upsets.</p>
+    <details class="lesson" open>
+      <summary>Concepts in this lesson</summary>
+      <div class="concept">
+        <div>
+          <h4>Definition</h4>
+          <p><strong>Solar particle event (SPE)</strong>: burst of mostly high-energy protons from the Sun that raise radiation levels in space near Earth.</p>
+          <p><strong>Dose</strong>: amount of radiation received. Here shown as mSv or mSv/day.</p>
+        </div>
+        <div>
+          <h4>Properties</h4>
+          <p>Stronger storms → higher proton flux → higher dose. Shielding lowers dose with diminishing returns. EVA exposure is larger than inside shelter.</p>
+        </div>
+      </div>
+      <div class="concept">
+        <div>
+          <h4>Observations</h4>
+          <p>Hydrogen-rich materials (water, polyethylene) make fewer harmful secondaries than metals at equal mass.</p>
+          <p>Electronics see single-event upsets (SEUs). ECC and voting reduce failures at the system level.</p>
+        </div>
+        <div>
+          <h4>Quick check</h4>
+          <div class="quiz" data-quiz="intro1">
+            <span class="value">Which cuts dose per kilogram better?</span>
+            <button data-correct="true">Polyethylene</button>
+            <button data-correct="false">Aluminum</button>
+            <span class="value" data-result></span>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- SIM 1 -->
   <div class="section card">
     <h2>Simulator 1 — Solar Particle Storm vs Station Shelter</h2>
     <p class="note">See proton flux surge, watch dose rate drop as shielding increases. EVA spikes risk fast.</p>
@@ -81,6 +127,28 @@
         </div>
       </div>
     </div>
+    <details class="lesson">
+      <summary>Concept 1 — Storm scale and dose</summary>
+      <div class="concept">
+        <div>
+          <h4>Definition</h4>
+          <p>S-scale (S1–S5) classifies proton storm strength. Higher S → higher flux.</p>
+          <h4>Properties</h4>
+          <p>Dose grows with flux and EVA time. Shielding reduces dose but never to zero.</p>
+        </div>
+        <div>
+          <h4>Observations</h4>
+          <p>Move the S-level and EVA. Note non-linear dose growth and threshold from safe→elevated→danger.</p>
+          <h4>Guided mini-test</h4>
+          <div class="quiz" data-quiz="q1a">
+            <span class="value">If EVA doubles, dose during EVA is…</span>
+            <button data-correct="true">Higher</button>
+            <button data-correct="false">Unchanged</button>
+            <span class="value" data-result></span>
+          </div>
+        </div>
+      </div>
+    </details>
     <div class="dyk">
       <h3>Did you know?</h3>
       <p>Water and plastic stop protons better than aluminum per kilogram.</p>
@@ -93,7 +161,7 @@
     </div>
   </div>
 
-  <!-- SIM 2: EVA Countdown — “Get Inside” Timer with Dose Ramp -->
+  <!-- SIM 2 -->
   <div class="section card">
     <h2>Simulator 2 — EVA Countdown: get to shelter</h2>
     <p class="note">Flare warning arrives. Timer runs. Closer shelter + more shielding = lower dose.</p>
@@ -125,6 +193,28 @@
         </div>
       </div>
     </div>
+    <details class="lesson">
+      <summary>Concept 2 — Warning, time, and dose accrual</summary>
+      <div class="concept">
+        <div>
+          <h4>Definition</h4>
+          <p><strong>Dose rate</strong>: dose per unit time; depends on flux and shielding.</p>
+          <h4>Properties</h4>
+          <p>Dose accrued ≈ dose rate × time. Shorter path or faster speed lowers total dose before shelter.</p>
+        </div>
+        <div>
+          <h4>Observations</h4>
+          <p>Reduce distance or increase speed. Watch the “Dose accrued” bar shrink.</p>
+          <h4>Guided mini-test</h4>
+          <div class="quiz" data-quiz="q2a">
+            <span class="value">Storms rise over…</span>
+            <button data-correct="true">Minutes to hours</button>
+            <button data-correct="false">Instantly</button>
+            <span class="value" data-result></span>
+          </div>
+        </div>
+      </div>
+    </details>
     <div class="dyk">
       <h3>Did you know?</h3>
       <p>Big proton storms rise over minutes to hours. Warnings matter.</p>
@@ -137,7 +227,7 @@
     </div>
   </div>
 
-  <!-- SIM 3: Shield Designer — Layered Materials & Areal Density -->
+  <!-- SIM 3 -->
   <div class="section card">
     <h2>Simulator 3 — Shield designer (layer stack)</h2>
     <p class="note">Stack water, polyethylene, and aluminum. Watch areal density and expected dose.</p>
@@ -168,6 +258,28 @@
         </div>
       </div>
     </div>
+    <details class="lesson">
+      <summary>Concept 3 — Areal density and material choice</summary>
+      <div class="concept">
+        <div>
+          <h4>Definition</h4>
+          <p><strong>Areal density</strong> Σρt (g/cm²) = density × thickness summed over layers.</p>
+          <h4>Properties</h4>
+          <p>Dose roughly follows exp(−k·Σρt). Hydrogen-rich layers give better k for protons than metals.</p>
+        </div>
+        <div>
+          <h4>Observations</h4>
+          <p>Swap cm between Al and PE at fixed Σρt. Dose changes because material matters.</p>
+          <h4>Guided mini-test</h4>
+          <div class="quiz" data-quiz="q3a">
+            <span class="value">Best swap at fixed mass?</span>
+            <button data-correct="true">More PE</button>
+            <button data-correct="false">More Al</button>
+            <span class="value" data-result></span>
+          </div>
+        </div>
+      </div>
+    </details>
     <div class="dyk">
       <h3>Did you know?</h3>
       <p>Hydrogen-rich materials make fewer dangerous secondaries than metals.</p>
@@ -180,7 +292,7 @@
     </div>
   </div>
 
-  <!-- SIM 4: Avionics Upset Risk — SEU vs Shield + Storm -->
+  <!-- SIM 4 -->
   <div class="section card">
     <h2>Simulator 4 — Avionics upset risk</h2>
     <p class="note">Electronics bit-flips climb with flux. Shielding helps, but watch secondaries.</p>
@@ -211,6 +323,28 @@
         </div>
       </div>
     </div>
+    <details class="lesson">
+      <summary>Concept 4 — Single-event upsets and mitigation</summary>
+      <div class="concept">
+        <div>
+          <h4>Definition</h4>
+          <p><strong>SEU</strong>: radiation-induced bit flip in electronics.</p>
+          <h4>Properties</h4>
+          <p>Upset rate ∝ flux × exp(−k·Σρt). ECC and redundancy reduce effective failures.</p>
+        </div>
+        <div>
+          <h4>Observations</h4>
+          <p>Compare none vs SECDED vs TMR. Note big drop in effective upsets.</p>
+          <h4>Guided mini-test</h4>
+          <div class="quiz" data-quiz="q4a">
+            <span class="value">ECC impact?</span>
+            <button data-correct="true">Lowers failures</button>
+            <button data-correct="false">Raises failures</button>
+            <span class="value" data-result></span>
+          </div>
+        </div>
+      </div>
+    </details>
     <div class="dyk">
       <h3>Did you know?</h3>
       <p>ECC and voting logic cut failures even when flux stays high.</p>
@@ -220,6 +354,45 @@
         <button data-correct="false">ECC raises SEU rate</button>
         <span class="value" data-result></span>
       </div>
+    </div>
+  </div>
+
+  <!-- Final lesson test -->
+  <div class="section card">
+    <h2>Lesson test — pass threshold 4/5</h2>
+    <div class="quiz" data-quiz="f1">
+      <span class="value">1. Higher S-level means…</span>
+      <button data-correct="true">Higher proton flux</button>
+      <button data-correct="false">Lower proton flux</button>
+      <span class="value" data-result></span>
+    </div>
+    <div class="quiz" data-quiz="f2">
+      <span class="value">2. Best per-mass shielding for protons:</span>
+      <button data-correct="true">Hydrogen-rich (water/PE)</button>
+      <button data-correct="false">High-Z metals only</button>
+      <span class="value" data-result></span>
+    </div>
+    <div class="quiz" data-quiz="f3">
+      <span class="value">3. Dose before shelter falls if you…</span>
+      <button data-correct="true">Shorten path or walk faster</button>
+      <button data-correct="false">Wait longer outside</button>
+      <span class="value" data-result></span>
+    </div>
+    <div class="quiz" data-quiz="f4">
+      <span class="value">4. SEU rate scales with…</span>
+      <button data-correct="true">Flux × exp(−k·Σρt)</button>
+      <button data-correct="false">Unrelated to flux</button>
+      <span class="value" data-result></span>
+    </div>
+    <div class="quiz" data-quiz="f5">
+      <span class="value">5. ECC/TMR mainly…</span>
+      <button data-correct="true">Reduce effective failures</button>
+      <button data-correct="false">Increase bit flips</button>
+      <span class="value" data-result></span>
+    </div>
+    <div class="btnrow">
+      <button id="grade" class="btn">Grade test</button>
+      <span class="value" id="scoreline">Score: 0/5</span>
     </div>
   </div>
 </div>
@@ -239,6 +412,14 @@ document.addEventListener('click',e=>{
   const ok=btn.getAttribute('data-correct')==='true';
   res.textContent= ok?'Correct ✅':'Try again';
   res.className='value '+(ok?'ok':'no');
+  if(ok){ box.dataset.state='ok'; } else { box.dataset.state=''; }
+});
+document.getElementById('grade')?.addEventListener('click',()=>{
+  const qs=[...document.querySelectorAll('.section.card:last-of-type .quiz')];
+  let score=0; qs.forEach(q=>{ if(q.dataset.state==='ok') score++; });
+  const out=document.getElementById('scoreline');
+  out.textContent=`Score: ${score}/${qs.length}`; 
+  out.style.color = score>=4 ? 'var(--ok)' : 'var(--bad)';
 });
 
 /* ===== SIM 1: SPE vs Shelter ===== */
@@ -271,7 +452,6 @@ document.addEventListener('click',e=>{
 
   function draw(){
     const {w,h}=fit(c,ctx);
-    // background with pulsating storm ring
     ctx.clearRect(0,0,w,h);
     const ringR=map(+s.value,1,5,90,220)*(0.9+0.1*Math.sin(t*0.06));
     const g=ctx.createRadialGradient(w/2,h/2,ringR*0.4,w/2,h/2,ringR);
@@ -279,26 +459,22 @@ document.addEventListener('click',e=>{
     g.addColorStop(1,'rgba(255,120,120,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(w/2,h/2,ringR,0,Math.PI*2); ctx.fill();
 
-    // station capsule
     ctx.fillStyle='rgba(124,244,255,0.12)'; ctx.beginPath(); ctx.arc(w/2,h/2,70,0,Math.PI*2); ctx.fill();
     const shPct=+sh.value;
     ctx.strokeStyle=`rgba(124,244,255,${0.25+0.55*shPct/100})`; ctx.lineWidth=4+shPct/18;
     ctx.beginPath(); ctx.arc(w/2,h/2,75,0,Math.PI*2); ctx.stroke();
 
-    // particles
     for(const p of particles){
       ctx.fillStyle = p.q>0.7 ? 'rgba(124,244,255,.9)' : 'rgba(255,120,120,.9)';
       ctx.beginPath(); ctx.arc(p.x,p.y, p.q>0.7?2.2:2.8, 0, Math.PI*2); ctx.fill();
       p.x += p.vx; p.y += p.vy; p.life--;
-      // scatter at shield edge
       const d=Math.hypot(p.x-w/2,p.y-h/2);
       if(d<78 && p.life>0){ p.vx*=-0.35; p.vy*=-0.35; }
     }
     particles=particles.filter(p=>p.life>0 && p.x>-40 && p.x<w+40 && p.y>-40 && p.y<h+40);
 
-    // live dosimeter bar
     const dose=dailyDose(+s.value,shPct,+eva.value);
-    const q = clamp((dose-1)/20,0,1); // map 1..21 mSv/day
+    const q = clamp((dose-1)/20,0,1);
     const bx=w-220, by=30, bw=200, bh=18;
     ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(bx,by,bw,bh);
     ctx.fillStyle = q<0.33?'#9CFF6E': q<0.66?'#FFD166':'#ff6b6b';
@@ -329,19 +505,16 @@ document.addEventListener('click',e=>{
 
   function draw(){
     const {w,h}=fit(c,ctx); ctx.clearRect(0,0,w,h);
-    // corridor
     const grad=ctx.createLinearGradient(0,0,w,0); grad.addColorStop(0,'#0d1f42'); grad.addColorStop(1,'#180a35');
     ctx.fillStyle=grad; ctx.fillRect(0,0,w,h);
-    // shelter door
     ctx.fillStyle='rgba(124,244,255,.15)'; ctx.fillRect(w-100,h*0.25,60,h*0.5);
     ctx.strokeStyle='rgba(124,244,255,.6)'; ctx.strokeRect(w-100,h*0.25,60,h*0.5);
 
-    const L=+path.value, v=+spd.value; // meters
-    const eta=L/v; // seconds
+    const L=+path.value, v=+spd.value;
+    const eta=L/v;
     const elapsed=(Date.now()-start)/1000; pos=clamp(elapsed*v,0,L);
     const x=map(pos,0,L,60,w-130), y=h*0.5 + Math.sin(t*0.15)*6;
 
-    // rising storm shimmer
     const flux=envFlux(); const wave=0.05+flux*0.001;
     for(let i=0;i<50;i++){
       const y0=h*0.15 + (i/50)*h*0.7;
@@ -357,15 +530,13 @@ document.addEventListener('click',e=>{
       ctx.strokeStyle=mix; ctx.lineWidth=2; ctx.stroke();
     }
 
-    // astronaut icon
     ctx.fillStyle='#e9f2ff'; ctx.beginPath(); ctx.arc(x,y,10,0,Math.PI*2); ctx.fill();
     ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.beginPath(); ctx.arc(x,y,16,0,Math.PI*2); ctx.stroke();
 
-    // integrate dose
-    const suitPct=+suit.value; const rate=doseRate(flux,suitPct); // mSv/min
+    const suitPct=+suit.value; const rate=doseRate(flux,suitPct);
     const minutes = clamp(elapsed/60,0,60);
     const dose = rate * minutes;
-    // bars
+
     const bx=30, by=30, bw=w-60, bh=12;
     ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(bx,by,bw,bh);
     const q=clamp(pos/L,0,1); ctx.fillStyle='#9CFF6E'; ctx.fillRect(bx,by,bw*q,bh);
@@ -379,7 +550,6 @@ document.addEventListener('click',e=>{
     read.textContent=`ETA: ${Math.floor(remain/60).toString().padStart(2,'0')}:${(remain%60).toString().padStart(2,'0')} · Speed: ${v.toFixed(1)} m/s · Path: ${L} m · Pred. dose: ${(rate*(eta/60)).toFixed(1)} mSv `;
     if(q2<0.33) badge(badgeEl,'ok','ok'); else if(q2<0.66) badge(badgeEl,'warn','caution'); else badge(badgeEl,'bad','urgent');
 
-    if(q>=1) { /* reached */ }
     if(run){ t+=1; requestAnimationFrame(draw); }
   }
 
@@ -399,8 +569,8 @@ document.addEventListener('click',e=>{
   const rho={h2o:1.0, pe:0.94, al:2.7}; // g/cm³ approx
   function areal(){return +h2o.value*0.1*rho.h2o + +pe.value*0.1*rho.pe + +al.value*0.1*rho.al} // g/cm²
   function baseFlux(){return [1,3,10,30,90][+storm.value-1]}
-  function dose(AD){ // crude attenuation: exp(-k*AD) with material benefit for H-rich layers
-    const k=0.07; // per g/cm²
+  function dose(AD){
+    const k=0.07;
     const hFrac = ((+h2o.value*0.1*rho.h2o)+(+pe.value*0.1*rho.pe)) / Math.max(areal(),1e-6);
     const effK = k*(0.8+0.2*hFrac);
     const quiet=0.5, spe=baseFlux()*0.12;
@@ -409,28 +579,22 @@ document.addEventListener('click',e=>{
 
   function draw(){
     const {w,h}=fit(c,ctx); ctx.clearRect(0,0,w,h);
-    // chamber
     const cx=w*0.35, cy=h*0.55, R=80;
-    // layers visualization
     const tH=+h2o.value, tP=+pe.value, tA=+al.value;
     const stack=[{t:tH,c:'rgba(124,244,255,.35)'},{t:tP,c:'rgba(156,255,110,.30)'},{t:tA,c:'rgba(255,255,255,.30)'}];
     let r=R;
     stack.forEach(s=>{ if(s.t>0){ ctx.strokeStyle=s.c; ctx.lineWidth=2+ s.t*0.2; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke(); r+=s.t*0.6; } });
 
-    // proton rain
     for(let i=0;i<60;i++){
       const x= w*0.65 + Math.sin((t+i)*0.07+i)*200;
       const y= map(i,0,60,-40,h+40);
       ctx.strokeStyle='rgba(255,120,120,.6)'; ctx.lineWidth=2;
       ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+6,y+16); ctx.stroke();
-      // scatter glow near chamber
       const d=Math.hypot(x-cx,y-cy); if(d<r+20){ ctx.fillStyle='rgba(178,141,255,.12)'; ctx.beginPath(); ctx.arc(cx,cy,r+30,0,Math.PI*2); ctx.fill(); }
     }
 
-    // astronaut icon
     ctx.fillStyle='#e9f2ff'; ctx.beginPath(); ctx.arc(cx,cy,10,0,Math.PI*2); ctx.fill();
 
-    // gauges
     const AD=areal(); const D=dose(AD);
     const bx=w-240, by=30, bw=210, bh=18;
     ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(bx,by,bw,bh);
@@ -462,24 +626,20 @@ document.addEventListener('click',e=>{
   let t=0, run=true, rows=220, buf=[];
 
   function seuRate(F,AD,ECC){
-    // baseline upsets per hour ~ proportional to flux; attenuate with exp(-k*AD); ECC reduces effective faults
     const k=0.05, base=F*0.06, att=Math.exp(-k*AD);
     let eff=base*att;
     if(ECC==='secded') eff*=0.35; if(ECC==='tmr') eff*=0.12;
-    // small floor
     return eff;
   }
 
   function synthRow(){
     const W=c.width, N=Math.floor((c.clientWidth||800)/2);
     const row=new Float32Array(N); const F=+flux.value, AD=+ad.value, EC=ecc.value;
-    const noise=-95 + F*0.15 - AD*0.6; // dBm visual floor
+    const noise=-95 + F*0.15 - AD*0.6;
     for(let i=0;i<N;i++){
       const f=i/N;
       let p=noise + 10*Math.sin(t*0.03 + f*8);
-      // carriers
       [0.18,0.42,0.66,0.81].forEach((fc,idx)=>{ const d=Math.abs(f-fc); p+= 22*Math.exp(-d*120)*(1+0.2*Math.sin(t*0.04+idx)); });
-      // glitches (SEU bursts)
       if(Math.random()<seuRate(F,AD,EC)*0.01){ const gBin=Math.floor(N*(0.1+0.8*Math.random())); row[gBin]=p+30; }
       row[i]=Math.max(row[i],p + (Math.random()-0.5)*2);
     }
@@ -502,7 +662,6 @@ document.addEventListener('click',e=>{
         ctx.fillRect(i*binW, r*rowH, Math.ceil(binW)+1, Math.ceil(rowH)+1);
       }
     }
-    // sweep
     ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.beginPath(); ctx.moveTo((t*2)%w,0); ctx.lineTo((t*2)%w,h); ctx.stroke();
 
     const rate=seuRate(+flux.value,+ad.value,ecc.value);

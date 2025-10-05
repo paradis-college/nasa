@@ -31,6 +31,10 @@
   .quiz button{background:rgba(156,255,110,.18);color:var(--accent);border:1px solid var(--border);border-radius:10px;padding:6px 10px;font-weight:800;cursor:pointer}
   .quiz .ok{color:#0f5132;background:rgba(111,230,194,.2);border-color:rgba(111,230,194,.5)}
   .quiz .no{color:#842029;background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.5)}
+  .lesson{margin-top:18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px}
+  .lesson h3{color:var(--accent);margin-bottom:8px}
+  .lesson h4{color:var(--accent);margin-top:10px}
+  .summary{margin-top:24px;background:rgba(156,255,110,.05);border:1px solid rgba(156,255,110,.2);border-radius:14px;padding:16px}
   @media(max-width:900px){.grid{grid-template-columns:1fr}canvas{height:340px}}
 </style>
 </head>
@@ -38,13 +42,11 @@
 <div class="container">
   <div class="header">
     <a class="back" href="..">← Back</a>
-    <h1> 
-      <!-- <a href="https://dbxdrgsl.github.io" target="_blank"> ~</a>  -->
-      <a target="_blank"> ~</a> 
-      / 
-      <a href = "..">Space Weather Simulators</a> 
-      / 
-      <a href="#">Aurora Simulator</a> / </h1>
+    <h1>
+      <a target="_blank"> ~</a> /
+      <a href="..">Space Weather Simulators</a> /
+      <a href="#">Aurora Simulator</a> /
+    </h1>
   </div>
 
   <!-- 1) Particle → Aurora -->
@@ -79,6 +81,27 @@
         </div>
       </div>
     </div>
+
+    <!-- LESSON 1 -->
+    <div class="lesson">
+      <h3>Lesson — Aurora Formation</h3>
+      <p><b>Definition:</b> Auroras are light emissions produced when charged solar particles are guided by Earth’s magnetic field into the upper atmosphere and collide with gases.</p>
+      <p><b>Properties:</b></p>
+      <ul style="margin-left:20px;line-height:1.5;">
+        <li>Driven by solar wind pressure and magnetic reconnection.</li>
+        <li>Form auroral ovals around magnetic poles.</li>
+        <li>Intensity rises during solar flares and CMEs.</li>
+      </ul>
+      <p><b>Observations:</b> Increasing solar-wind speed or transient “flare” bursts raises particle input and brightens aurora. Magnetic tilt shifts where field lines funnel particles.</p>
+      <h4>Guided Test</h4>
+      <div class="quiz" data-quiz="t1">
+        <button data-correct="true">Auroras are caused by solar particles guided by Earth’s field</button>
+        <button data-correct="false">Auroras are lightning from clouds</button>
+        <button data-correct="false">Auroras come from Earth’s core heat</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+
     <div class="dyk">
       <h3>Did you know?</h3>
       <p>Auroras cluster near the poles because particles spiral along Earth’s magnetic field lines.</p>
@@ -122,6 +145,27 @@
         </div>
       </div>
     </div>
+
+    <!-- LESSON 2 -->
+    <div class="lesson">
+      <h3>Lesson — Aurora Colors and Altitude</h3>
+      <p><b>Definition:</b> Aurora colors arise from excited atmospheric atoms and molecules relaxing and emitting photons at characteristic wavelengths.</p>
+      <p><b>Properties:</b></p>
+      <ul style="margin-left:20px;line-height:1.5;">
+        <li>Oxygen ~557.7 nm green (~100–150 km); ~630.0 nm red (>200 km).</li>
+        <li>Nitrogen/N₂⁺ bands yield blue–purple, often lower altitudes and higher energies.</li>
+        <li>Higher particle energy penetrates deeper, changing dominant colors.</li>
+      </ul>
+      <p><b>Observations:</b> Raising energy increases wave amplitude and can boost blue/purple from N₂. Shifting altitude peak upward favors red oxygen emissions.</p>
+      <h4>Guided Test</h4>
+      <div class="quiz" data-quiz="t2">
+        <button data-correct="true">Red oxygen emissions are typically higher than green</button>
+        <button data-correct="false">Green occurs above red</button>
+        <button data-correct="false">Color is unrelated to altitude</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+
     <div class="dyk">
       <h3>Did you know?</h3>
       <p>Red aurora often occurs higher than green, usually above ~200 km.</p>
@@ -157,6 +201,27 @@
         </div>
       </div>
     </div>
+
+    <!-- LESSON 3 -->
+    <div class="lesson">
+      <h3>Lesson — Auroral Oval and Magnetic Activity</h3>
+      <p><b>Definition:</b> The auroral oval is a ring-shaped region encircling each pole where auroras are most likely, shifting with geomagnetic activity.</p>
+      <p><b>Properties:</b></p>
+      <ul style="margin-left:20px;line-height:1.5;">
+        <li>Kp index (0–9) tracks global geomagnetic disturbance.</li>
+        <li>Higher Kp moves the oval equatorward and widens it.</li>
+        <li>Local time and Earth’s rotation modulate visibility.</li>
+      </ul>
+      <p><b>Observations:</b> Increasing Kp lowers the latitude threshold for visibility. Cities closer to the oval during local night have higher chances.</p>
+      <h4>Guided Test</h4>
+      <div class="quiz" data-quiz="t3">
+        <button data-correct="true">Higher Kp pushes the oval toward the equator</button>
+        <button data-correct="false">Higher Kp keeps the oval near the pole</button>
+        <button data-correct="false">Kp has no relation to auroras</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+
     <div class="dyk">
       <h3>Did you know?</h3>
       <p>Higher Kp pushes the oval equatorward, making auroras visible farther from the poles.</p>
@@ -168,6 +233,19 @@
       </div>
     </div>
   </div>
+
+  <!-- FINAL LESSON SUMMARY -->
+  <div class="summary">
+    <h3 style="color:var(--accent);margin-bottom:8px;">Lesson Summary — Space Weather and Auroras</h3>
+    <p>Space weather links the Sun and Earth via solar wind, flares, and CMEs. These drive particle precipitation, ignite auroras, and can impact satellites, radio, and power grids. Color depends on gas and altitude. Visibility expands equatorward as Kp rises.</p>
+    <h4 style="color:var(--accent);margin-top:10px;">Guided Review Test</h4>
+    <div class="quiz" data-quiz="final">
+      <button data-correct="true">Auroras are caused by solar particles entering Earth’s magnetic field</button>
+      <button data-correct="false">Auroras are lightning in the upper atmosphere</button>
+      <button data-correct="false">Auroras only appear during eclipses</button>
+      <span class="value" data-result></span>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -176,7 +254,7 @@ const DPR = () => window.devicePixelRatio || 1;
 function fitCanvas(c,ctx){const w=c.clientWidth||800,h=c.clientHeight||420;c.width=Math.round(w*DPR());c.height=Math.round(h*DPR());ctx.setTransform(DPR(),0,0,DPR(),0,0);return {w,h}}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 
-/* ===== Did-you-know micro-quiz ===== */
+/* ===== Did-you-know + Lesson quizzes ===== */
 document.addEventListener('click',e=>{
   const btn=e.target.closest('.quiz button'); if(!btn) return;
   const box=btn.closest('.quiz'); const res=box.querySelector('[data-result]');
@@ -344,9 +422,9 @@ const State={variables:{swSpeed:420,flare:5,tilt:18,paused:false}};
       ctx.fillStyle='#ffdf5e'; ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2); ctx.fill();
       const d = Math.hypot(px-cx, py-cy);
       const vis = (d > rOval - thickness*0.8) && (d < rOval + thickness*0.8);
-      readout.textContent = `Kp≈${kp.toFixed(1)} · LT ${( (nightAng%(2*Math.PI))/(2*Math.PI)*24 + 24 )%24 |0}h · ${vis?'Visible ✅':'Not visible'} at ${city.lat.toFixed(1)}°, ${city.lon.toFixed(1)}°`;
+      readout.textContent = `Kp≈${kp.toFixed(1)} · LT ${(((nightAng%(2*Math.PI))/(2*Math.PI)*24 + 24)%24)|0}h · ${vis?'Visible ✅':'Not visible'} at ${city.lat.toFixed(1)}°, ${city.lon.toFixed(1)}°`;
     } else {
-      readout.textContent = `Kp≈${kp.toFixed(1)} · LT ${( (nightAng%(2*Math.PI))/(2*Math.PI)*24 + 24 )%24 |0}h · Rotating`;
+      readout.textContent = `Kp≈${kp.toFixed(1)} · LT ${(((nightAng%(2*Math.PI))/(2*Math.PI)*24 + 24)%24)|0}h · Rotating`;
     }
 
     if(running){ t += 0.8*+speedCtrl.value; requestAnimationFrame(draw); }

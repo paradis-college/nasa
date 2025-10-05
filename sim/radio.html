@@ -26,11 +26,25 @@
   .note{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-top:10px}
   .dyk{margin-top:12px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);border-radius:12px;padding:12px}
   .dyk h3{font-size:.95rem;color:var(--accent);margin-bottom:6px}
-  .quiz{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .quiz{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;align-items:center}
   .quiz button{background:rgba(255,107,107,.18);color:var(--accent);border:1px solid var(--border);border-radius:10px;padding:6px 10px;font-weight:800;cursor:pointer}
   .quiz .ok{color:#0f5132;background:rgba(111,230,194,.2);border-color:rgba(111,230,194,.5)}
   .quiz .no{color:#842029;background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.5)}
   @media(max-width:900px){.grid{grid-template-columns:1fr}canvas{height:340px}}
+
+  /* Lesson blocks */
+  details.lesson{margin-top:14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;overflow:hidden}
+  details.lesson>summary{cursor:pointer;list-style:none;padding:10px 14px;background:rgba(255,255,255,.05);font-weight:800;color:var(--accent)}
+  details.lesson[open]>summary{border-bottom:1px solid rgba(255,255,255,.1)}
+  .lesson-body{padding:12px 14px;display:grid;gap:10px}
+  .lesson-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .tile{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px}
+  .tile h4{margin-bottom:6px;color:#e9f2ff}
+  .gt{margin-top:6px;padding:10px;border:1px dashed rgba(255,255,255,.18);border-radius:10px}
+  .mc{display:grid;gap:6px;margin:6px 0}
+  .mc label{display:flex;gap:8px;align-items:center;color:#e9f2ff;font-weight:600}
+  .mc input{transform:translateY(1px)}
+  .score{font-weight:800}
 </style>
 </head>
 <body>
@@ -38,13 +52,11 @@
   <div class="header">
     <a class="back" href="..">← Back</a>
     <h1>
-      <!-- <a href = "https://dbxdrgsl.github.io">~</a> -->
       <a>~</a>
       / 
       <a href=".." > Space Weather Stories</a>
       /
       <a href="#">Peter’s Radio & Navigation Lab</a>
-
   </div>
 
   <!-- SIM 1: HF/VHF/UHF Radio Blackout (Pilot cockpit view) -->
@@ -87,12 +99,55 @@
       <h3>Did you know?</h3>
       <p>HF dies first in flares. VHF/UHF ignore the ionosphere but cannot cross oceans.</p>
       <div class="quiz" data-quiz="q1">
-        <span class="value">Quiz:</span>
+        <span class="value">Quick check:</span>
         <button data-correct="true">VHF is line-of-sight</button>
         <button data-correct="false">VHF rides the ionosphere</button>
         <span class="value" data-result></span>
       </div>
     </div>
+
+    <!-- LESSON 1 -->
+    <details class="lesson" open>
+      <summary>Lesson: HF vs VHF vs UHF under solar flares</summary>
+      <div class="lesson-body">
+        <div class="lesson-grid">
+          <div class="tile">
+            <h4>Definition</h4>
+            <p><b>HF</b>: 3–30&nbsp;MHz. Reflects from ionosphere for long-range.
+            <br><b>VHF/UHF</b>: 30–300/300–3000&nbsp;MHz. Mostly straight-line paths.</p>
+          </div>
+          <div class="tile">
+            <h4>Properties</h4>
+            <ul>
+              <li>Solar flares increase D-layer ionization → more <i>absorption</i> at HF.</li>
+              <li>VHF/UHF less affected by ionosphere, limited by horizon and obstacles.</li>
+              <li>Long-range HF needs lower absorption and suitable skip geometry.</li>
+            </ul>
+          </div>
+          <div class="tile">
+            <h4>Observations</h4>
+            <ul>
+              <li>Raising "Flare" and "Absorption" drives HF SNR down to blackout.</li>
+              <li>VHF/UHF SNR tracks distance more than flare.</li>
+              <li>Range slider shows skip vs LOS trade-offs.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gt">
+          <div class="value">Guided test</div>
+          <div class="mc" data-mc="l1">
+            <label><input type="radio" name="l1q1" data-correct> HF suffers most during D-layer enhancement</label>
+            <label><input type="radio" name="l1q1"> UHF reflects better when the Sun is active</label>
+          </div>
+          <div class="mc" data-mc="l1">
+            <label><input type="radio" name="l1q2"> VHF crosses oceans by skywave in flares</label>
+            <label><input type="radio" name="l1q2" data-correct> VHF/UHF remain LOS-limited</label>
+          </div>
+          <button class="btn" data-check="l1">Check</button>
+          <span class="value score" data-score="l1"></span>
+        </div>
+      </div>
+    </details>
   </div>
 
   <!-- SIM 2: GPS Scintillation & Position Error (Drone localization) -->
@@ -130,12 +185,54 @@
       <h3>Did you know?</h3>
       <p>Low-elevation satellites add noise. The signal crosses more atmosphere and obstacles.</p>
       <div class="quiz" data-quiz="q2">
-        <span class="value">Quiz:</span>
+        <span class="value">Quick check:</span>
         <button data-correct="false">High elevation = worse</button>
         <button data-correct="true">Low elevation = worse</button>
         <span class="value" data-result></span>
       </div>
     </div>
+
+    <!-- LESSON 2 -->
+    <details class="lesson">
+      <summary>Lesson: GNSS scintillation and positioning</summary>
+      <div class="lesson-body">
+        <div class="lesson-grid">
+          <div class="tile">
+            <h4>Definition</h4>
+            <p><b>Scintillation</b> is rapid amplitude/phase fluctuation caused by small-scale ionospheric irregularities. <b>S4</b> quantifies amplitude scintillation (0–1).</p>
+          </div>
+          <div class="tile">
+            <h4>Properties</h4>
+            <ul>
+              <li>Higher S4 → larger pseudorange error and cycle slips.</li>
+              <li>Low satellite elevation increases path length and blockage risk.</li>
+              <li>Multipath adds bias and variance to position estimates.</li>
+            </ul>
+          </div>
+          <div class="tile">
+            <h4>Observations</h4>
+            <ul>
+              <li>RMS error ring scales with S4 and multipath level.</li>
+              <li>Raising elevation tightens links and shrinks the cloud.</li>
+              <li>Scatter persistence visualizes time-correlated errors.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gt">
+          <div class="value">Guided test</div>
+          <div class="mc" data-mc="l2">
+            <label><input type="radio" name="l2q1" data-correct> S4 closer to 1 implies stronger scintillation</label>
+            <label><input type="radio" name="l2q1"> S4 near 1 means perfect signal</label>
+          </div>
+          <div class="mc" data-mc="l2">
+            <label><input type="radio" name="l2q2"> Using only low-elevation satellites improves accuracy</label>
+            <label><input type="radio" name="l2q2" data-correct> Higher elevation generally reduces error</label>
+          </div>
+          <button class="btn" data-check="l2">Check</button>
+          <span class="value score" data-score="l2"></span>
+        </div>
+      </div>
+    </details>
   </div>
 
   <!-- SIM 3: Drone C2 Link vs distance/interference (live swarm) -->
@@ -169,12 +266,54 @@
       <h3>Did you know?</h3>
       <p>Free-space loss rises with distance and frequency. Doubling distance costs ~6 dB.</p>
       <div class="quiz" data-quiz="q3">
-        <span class="value">Quiz:</span>
+        <span class="value">Quick check:</span>
         <button data-correct="true">2× distance ≈ +6 dB loss</button>
         <button data-correct="false">2× distance ≈ +1 dB loss</button>
         <span class="value" data-result></span>
       </div>
     </div>
+
+    <!-- LESSON 3 -->
+    <details class="lesson">
+      <summary>Lesson: Link budget and performance</summary>
+      <div class="lesson-body">
+        <div class="lesson-grid">
+          <div class="tile">
+            <h4>Definition</h4>
+            <p><b>Link budget</b> sums gains and losses from TX to RX to estimate SNR, packet loss, and latency.</p>
+          </div>
+          <div class="tile">
+            <h4>Properties</h4>
+            <ul>
+              <li>Path loss ≈ 20·log10(f) + 20·log10(d) + const.</li>
+              <li>Higher noise floor reduces SNR and raises packet loss.</li>
+              <li>Adaptive rate trades throughput for robustness.</li>
+            </ul>
+          </div>
+          <div class="tile">
+            <h4>Observations</h4>
+            <ul>
+              <li>Increasing distance or noise increases PL and RTT in the sim.</li>
+              <li>Raising TX power improves SNR but within limits.</li>
+              <li>Visual jitter of drones correlates with PL.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gt">
+          <div class="value">Guided test</div>
+          <div class="mc" data-mc="l3">
+            <label><input type="radio" name="l3q1" data-correct> Higher noise floor → lower SNR</label>
+            <label><input type="radio" name="l3q1"> Higher noise floor → higher SNR</label>
+          </div>
+          <div class="mc" data-mc="l3">
+            <label><input type="radio" name="l3q2"> Doubling distance usually halves loss</label>
+            <label><input type="radio" name="l3q2" data-correct> Doubling distance adds ~6 dB loss</label>
+          </div>
+          <button class="btn" data-check="l3">Check</button>
+          <span class="value score" data-score="l3"></span>
+        </div>
+      </div>
+    </details>
   </div>
 
   <!-- SIM 4: Spectrum Waterfall (noise floor + flares + jammers) -->
@@ -212,11 +351,83 @@
       <h3>Did you know?</h3>
       <p>A higher noise floor shrinks link margin. Fewer clean channels remain.</p>
       <div class="quiz" data-quiz="q4">
-        <span class="value">Quiz:</span>
+        <span class="value">Quick check:</span>
         <button data-correct="false">Higher noise → more margin</button>
         <button data-correct="true">Higher noise → less margin</button>
         <span class="value" data-result></span>
       </div>
+    </div>
+
+    <!-- LESSON 4 -->
+    <details class="lesson">
+      <summary>Lesson: Reading waterfalls and choosing channels</summary>
+      <div class="lesson-body">
+        <div class="lesson-grid">
+          <div class="tile">
+            <h4>Definition</h4>
+            <p><b>Waterfall</b> is a time-vs-frequency heatmap where color encodes power. Bright bands are signals.</p>
+          </div>
+          <div class="tile">
+            <h4>Properties</h4>
+            <ul>
+              <li>Noise floor sets the baseline. Anything above may be usable but reduces margin.</li>
+              <li>Interferers can be narrowband (carriers) or wideband (jammers).</li>
+              <li>Solar activity can lift the whole floor or create ripples.</li>
+            </ul>
+          </div>
+          <div class="tile">
+            <h4>Observations</h4>
+            <ul>
+              <li>Raising "Flare" subtly brightens the background in the sim.</li>
+              <li>Setting jammers adds strong stripes. Avoid those frequencies.</li>
+              <li>Seek darker windows for best SNR.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gt">
+          <div class="value">Guided test</div>
+          <div class="mc" data-mc="l4">
+            <label><input type="radio" name="l4q1" data-correct> Darker region → lower interference</label>
+            <label><input type="radio" name="l4q1"> Darker region → stronger carrier</label>
+          </div>
+          <div class="mc" data-mc="l4">
+            <label><input type="radio" name="l4q2"> Choose the brightest stripe for data</label>
+            <label><input type="radio" name="l4q2" data-correct> Choose a dark gap for data</label>
+          </div>
+          <button class="btn" data-check="l4">Check</button>
+          <span class="value score" data-score="l4"></span>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <!-- FINAL LESSON TEST -->
+  <div class="section card">
+    <h2>Lesson wrap‑up test</h2>
+    <p class="note">Answer all questions. Then press Score.</p>
+    <div class="gt" id="final">
+      <div class="mc" data-final>
+        <div class="value">1) During a strong solar flare, which band is most likely to blackout first?</div>
+        <label><input type="radio" name="f1" data-correct> HF</label>
+        <label><input type="radio" name="f1"> UHF</label>
+      </div>
+      <div class="mc" data-final>
+        <div class="value">2) Higher S4 typically means:</div>
+        <label><input type="radio" name="f2" data-correct> More GNSS positioning error</label>
+        <label><input type="radio" name="f2"> Cleaner GNSS signals</label>
+      </div>
+      <div class="mc" data-final>
+        <div class="value">3) Doubling drone distance mainly affects:</div>
+        <label><input type="radio" name="f3" data-correct> Path loss increases ~6 dB</label>
+        <label><input type="radio" name="f3"> Latency drops</label>
+      </div>
+      <div class="mc" data-final>
+        <div class="value">4) In a spectrum waterfall, a dark gap suggests:</div>
+        <label><input type="radio" name="f4" data-correct> A cleaner channel</label>
+        <label><input type="radio" name="f4"> A strong interfering carrier</label>
+      </div>
+      <button class="btn" id="finalScoreBtn">Score</button>
+      <span class="value score" id="finalScore"></span>
     </div>
   </div>
 </div>
@@ -228,7 +439,7 @@ function fit(c,ctx){const w=c.clientWidth||800,h=c.clientHeight||420;c.width=Mat
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function db2lin(db){return Math.pow(10,db/10)}
 
-/* ===== micro-quiz ===== */
+/* ===== micro-quiz (inline buttons) ===== */
 document.addEventListener('click',e=>{
   const btn=e.target.closest('.quiz button'); if(!btn) return;
   const box=btn.closest('.quiz'); const res=box.querySelector('[data-result]');
@@ -236,6 +447,43 @@ document.addEventListener('click',e=>{
   res.textContent= ok?'Correct ✅':'Try again';
   res.className='value '+(ok?'ok':'no');
 });
+
+/* ===== lesson guided tests (radio groups) ===== */
+function scoreGroup(group){
+  const blocks=[...document.querySelectorAll('.mc[data-mc="'+group+'"]')];
+  let correct=0,total=0;
+  blocks.forEach(b=>{
+    const radios=[...b.querySelectorAll('input[type="radio"]')];
+    const chosen=radios.find(r=>r.checked);
+    const ok=radios.find(r=>r.hasAttribute('data-correct'));
+    total++;
+    if(chosen && chosen===ok) correct++;
+  });
+  const out=document.querySelector('[data-score="'+group+'"]');
+  if(out) out.textContent=`Score: ${correct}/${total}`;
+}
+
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-check]'); if(!btn) return;
+  const g=btn.getAttribute('data-check');
+  scoreGroup(g);
+});
+
+/* ===== final test scoring ===== */
+function scoreFinal(){
+  const sections=[...document.querySelectorAll('#final .mc[data-final]')];
+  let correct=0,total=sections.length;
+  sections.forEach(sec=>{
+    const radios=[...sec.querySelectorAll('input[type="radio"]')];
+    const chosen=radios.find(r=>r.checked);
+    const ok=radios.find(r=>r.hasAttribute('data-correct'));
+    if(chosen && chosen===ok) correct++;
+  });
+  const out=document.getElementById('finalScore');
+  out.textContent=`Total: ${correct}/${total} ${correct===total?'✅ Perfect':' '}`;
+}
+
+document.getElementById('finalScoreBtn').addEventListener('click',scoreFinal);
 
 /* ===== SIM 1: Cockpit link ===== */
 (function(){

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Engineer Power Grid + GIC Heat + Frequency Lab</title>
+<title>Engineer Power Grid + GIC Heat + Frequency Lab — With Lessons</title>
 <style>
   :root{--bg:#0a0e1a;--card:#1a2540;--text:#e9f2ff;--accent:#7cf4ff;--border:rgba(124,244,255,.3);--ok:#9CFF6E;--warn:#FFD166;--bad:#ff6b6b}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -15,10 +15,12 @@
   .section-title{color:var(--accent);margin:18px 0 6px}
   .subtitle{opacity:.9;margin-bottom:8px}
 
-  /* shared blocks */
+  /* layout */
   .sim{display:grid;grid-template-columns:1fr 320px;gap:16px;margin:12px 0 26px}
   .viz{position:relative;background:var(--card);border:2px solid var(--border);border-radius:18px;padding:18px;min-height:520px;overflow:hidden}
   .panel{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px}
+  .sidecol{display:grid;gap:12px}
+
   .label{display:block;font-weight:800;margin:8px 0 6px;color:var(--accent)}
   input[type="range"]{width:100%;height:8px;background:rgba(124,244,255,.2);border-radius:4px}
   input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;background:var(--accent);border-radius:50%}
@@ -31,6 +33,19 @@
   .quiz .ok{color:#0f5132;background:rgba(111,230,194,.2);border-color:rgba(111,230,194,.5)}
   .quiz .no{color:#842029;background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.5)}
 
+  /* Lesson blocks */
+  details.lesson{border:1px solid var(--border);border-radius:14px;padding:10px;background:rgba(124,244,255,.06)}
+  details.lesson>summary{cursor:pointer;font-weight:900;color:var(--accent);list-style:none}
+  details.lesson[open]{box-shadow:0 6px 26px -16px rgba(0,0,0,.6)}
+  .lesson-body{padding-top:8px;display:grid;gap:10px}
+  .card{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px}
+  .card h4{color:var(--accent);margin-bottom:6px}
+  .check{display:flex;gap:8px;align-items:center;margin:4px 0}
+  .check input{accent-color:#7cf4ff}
+  .lesson-foot{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:800;font-size:.8rem}
+  .okP{background:rgba(156,255,110,.18);color:var(--ok)} .warnP{background:rgba(255,209,102,.18);color:var(--warn)} .badP{background:rgba(255,107,107,.18);color:var(--bad)}
+
   /* --- SIM 1: Engineer Power Grid (3 gens) --- */
   .grid-display{width:100%;height:400px;background:#0a0e1a;border-radius:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:20px}
   .grid-node{background:rgba(124,244,255,.2);border:2px solid rgba(124,244,255,.5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;transition:.2s}
@@ -40,8 +55,6 @@
   @keyframes glow{0%{filter:drop-shadow(0 0 0 var(--bad))}100%{filter:drop-shadow(0 0 10px var(--bad))}}
   .gens{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 12px}
   .gen{background:rgba(124,244,255,.08);border:1px solid rgba(124,244,255,.25);border-radius:10px;padding:10px}
-  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:800;font-size:.8rem}
-  .okP{background:rgba(156,255,110,.18);color:var(--ok)} .warnP{background:rgba(255,209,102,.18);color:var(--warn)} .badP{background:rgba(255,107,107,.18);color:var(--bad)}
   .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
   .btn{background:linear-gradient(180deg,#2e8cff,#1e6bd6);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
   .alarm::before{content:"";position:absolute;inset:0;background:
@@ -68,7 +81,7 @@
   .freqRead{text-align:center;font-weight:900;margin-top:6px}
   canvas#sparkPlot{width:100%;height:140px;background:#0b1429;border-radius:10px;margin-top:10px}
 
-  @media(max-width:900px){.sim{grid-template-columns:1fr}.gens{grid-template-columns:1fr}}
+  @media(max-width:980px){.sim{grid-template-columns:1fr}.sidecol{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -76,15 +89,11 @@
   <div class="header">
     <a class="back" href="..">← Back</a>
     <h1>
-      ~
-      /
-      <a href="..">Stellar Weather Stories</a>
-      /
-      <a href="#">⚡ Grid Control Suite</a>
+      ~ / <a href="..">Stellar Weather Stories</a> / <a href="#">⚡ Grid Control Suite</a>
     </h1>
   </div>
 
-  <!-- ===== SIM 1: Engineer Power Grid — 3 Generators + Quiz ===== -->
+  <!-- ===== SIM 1: Engineer Power Grid — 3 Generators + Concept Lesson ===== -->
   <h2 class="section-title">Engineer Power Grid — 3 Generators</h2>
   <p class="subtitle">Tune gens, load, and shielding. Flashing cells indicate overload risk.</p>
   <div class="sim">
@@ -130,43 +139,75 @@
       </div>
     </div>
 
-    <div class="panel">
-      <h3 style="margin-bottom:10px;color:var(--accent)">Control Panel</h3>
+    <div class="sidecol">
+      <div class="panel">
+        <h3 style="margin-bottom:10px;color:var(--accent)">Control Panel</h3>
 
-      <label class="label" for="geomagneticStorm">Geomagnetic Storm (G0–G5)</label>
-      <input type="range" id="geomagneticStorm" min="0" max="5" value="4" step="1"/>
-      <div class="value" id="stormValue">G4 - Severe</div>
+        <label class="label" for="geomagneticStorm">Geomagnetic Storm (G0–G5)</label>
+        <input type="range" id="geomagneticStorm" min="0" max="5" value="4" step="1"/>
+        <div class="value" id="stormValue">G4 - Severe</div>
 
-      <label class="label" for="gridLoad">System Load (% peak)</label>
-      <input type="range" id="gridLoad" min="0" max="120" value="95"/>
-      <div class="value" id="loadValue">95%</div>
+        <label class="label" for="gridLoad">System Load (% peak)</label>
+        <input type="range" id="gridLoad" min="0" max="120" value="95"/>
+        <div class="value" id="loadValue">95%</div>
 
-      <label class="label" for="transformerTemp">Transformer Temp (°C)</label>
-      <input type="range" id="transformerTemp" min="20" max="120" value="102"/>
-      <div class="value" id="tempValue">102°C</div>
+        <label class="label" for="transformerTemp">Transformer Temp (°C)</label>
+        <input type="range" id="transformerTemp" min="20" max="120" value="102"/>
+        <div class="value" id="tempValue">102°C</div>
 
-      <label class="label" for="shielding">Grid Shielding</label>
-      <input type="range" id="shielding" min="0" max="100" value="20"/>
-      <div class="value" id="shieldingValue">20%</div>
+        <label class="label" for="shielding">Grid Shielding</label>
+        <input type="range" id="shielding" min="0" max="100" value="20"/>
+        <div class="value" id="shieldingValue">20%</div>
 
-      <hr style="opacity:.2;margin:10px 0"/>
+        <hr style="opacity:.2;margin:10px 0"/>
 
-      <label class="label" for="genA">Gen A Output (%)</label>
-      <input type="range" id="genA" min="0" max="100" value="35"/>
+        <label class="label" for="genA">Gen A Output (%)</label>
+        <input type="range" id="genA" min="0" max="100" value="35"/>
 
-      <label class="label" for="genB">Gen B Output (%)</label>
-      <input type="range" id="genB" min="0" max="100" value="35"/>
+        <label class="label" for="genB">Gen B Output (%)</label>
+        <input type="range" id="genB" min="0" max="100" value="35"/>
 
-      <label class="label" for="genC">Gen C Output (%)</label>
-      <input type="range" id="genC" min="0" max="100" value="20"/>
+        <label class="label" for="genC">Gen C Output (%)</label>
+        <input type="range" id="genC" min="0" max="100" value="20"/>
 
-      <div class="info" style="font-size:.85rem">
-        <p><b>Tip:</b> Keep spinning reserve ≥ 10% of load. During G4–G5 raise shielding and shed load.</p>
+        <div class="info" style="font-size:.85rem">
+          <p><b>Tip:</b> Keep spinning reserve ≥ 10% of load. During G4–G5 raise shielding and shed load.</p>
+        </div>
       </div>
+
+      <!-- Lesson block for Sim 1 -->
+      <details class="lesson" open>
+        <summary>Lesson • Concept: <u>Spinning reserve & N-1 security</u></summary>
+        <div class="lesson-body">
+          <div class="card">
+            <h4>Definition</h4>
+            <p><b>Spinning reserve</b> is online generation that can ramp quickly to cover a sudden loss or load increase. <b>N-1 security</b> is the ability to withstand any single failure without service interruption.</p>
+          </div>
+          <div class="card">
+            <h4>Properties</h4>
+            <ul>
+              <li>Reserve margin = total generation − load.</li>
+              <li>Thermal stress rises with load, temperature, and GIC-induced DC.</li>
+              <li>Shielding and load-shedding reduce risk.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Observations</h4>
+            <p>Increase storm level → more overloaded nodes. Raising shielding or reserve lowers overload count. Tripping a generator tests N-1.</p>
+          </div>
+          <div class="card">
+            <h4>Guided test</h4>
+            <div class="check"><input type="checkbox" data-target="geomagneticStorm" data-set="5"> <label>Set storm to G5. Do overloads appear?</label></div>
+            <div class="check"><input type="checkbox" data-target="shielding" data-set="80"> <label>Raise shielding to 80%. Do overloads reduce?</label></div>
+            <div class="check"><input type="checkbox" data-target="genA" data-set="0"> <label>Trip Gen A. Is reserve margin still ≥ 10%?</label></div>
+            <div class="lesson-foot"><span class="pill warnP">Complete the three checks</span><button class="btn" data-apply="run-checks-1">Auto-apply steps</button></div>
+          </div>
+        </div>
+      </details>
     </div>
   </div>
 
-  <!-- ===== SIM 2: GIC Corridor Heat Map ===== -->
+  <!-- ===== SIM 2: GIC Corridor Heat Map + Concept Lesson ===== -->
   <h2 class="section-title">GIC Corridor Heat Map</h2>
   <p class="subtitle">Storm, latitude, ground, and line direction set GIC risk and hot spots.</p>
   <div class="sim">
@@ -189,26 +230,58 @@
       </div>
       <p class="status" id="gicStatus"></p>
     </div>
-    <div class="panel">
-      <label class="label" for="storm">Storm Level (G0–G5)</label>
-      <input type="range" id="storm" min="0" max="5" value="4"/>
-      <div class="value" id="stormV">G4</div>
+    <div class="sidecol">
+      <div class="panel">
+        <label class="label" for="storm">Storm Level (G0–G5)</label>
+        <input type="range" id="storm" min="0" max="5" value="4"/>
+        <div class="value" id="stormV">G4</div>
 
-      <label class="label" for="lat">Latitude (° geomag)</label>
-      <input type="range" id="lat" min="20" max="70" value="60"/>
-      <div class="value" id="latV">60°</div>
+        <label class="label" for="lat">Latitude (° geomag)</label>
+        <input type="range" id="lat" min="20" max="70" value="60"/>
+        <div class="value" id="latV">60°</div>
 
-      <label class="label" for="cond">Ground Conductivity</label>
-      <input type="range" id="cond" min="1" max="100" value="60"/>
-      <div class="value" id="condV">60%</div>
+        <label class="label" for="cond">Ground Conductivity</label>
+        <input type="range" id="cond" min="1" max="100" value="60"/>
+        <div class="value" id="condV">60%</div>
 
-      <label class="label" for="dir">Dominant Line Orientation</label>
-      <input type="range" id="dir" min="0" max="90" value="75"/>
-      <div class="value" id="dirV">E–W bias</div>
+        <label class="label" for="dir">Dominant Line Orientation</label>
+        <input type="range" id="dir" min="0" max="90" value="75"/>
+        <div class="value" id="dirV">E–W bias</div>
+      </div>
+
+      <!-- Lesson block for Sim 2 -->
+      <details class="lesson">
+        <summary>Lesson • Concept: <u>Geomagnetically induced currents (GIC)</u></summary>
+        <div class="lesson-body">
+          <div class="card">
+            <h4>Definition</h4>
+            <p><b>GIC</b> are quasi-DC currents induced in long conductors by time-varying geomagnetic fields during solar storms.</p>
+          </div>
+          <div class="card">
+            <h4>Properties</h4>
+            <ul>
+              <li>Increase with storm level and latitude.</li>
+              <li>Depend on ground conductivity and line orientation.</li>
+              <li>Cause transformer half-cycle saturation and VAR loss.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Observations</h4>
+            <p>Raising latitude and E–W bias lights more corridors red. Higher conductivity amplifies risk.</p>
+          </div>
+          <div class="card">
+            <h4>Guided test</h4>
+            <div class="check"><input type="checkbox" data-target="lat" data-set="70"> <label>Set latitude to 70°. Note risk change.</label></div>
+            <div class="check"><input type="checkbox" data-target="dir" data-set="90"> <label>Set orientation to 90° (E–W). Do more links overload?</label></div>
+            <div class="check"><input type="checkbox" data-target="cond" data-set="90"> <label>Raise conductivity to 90%. Observe status.</label></div>
+            <div class="lesson-foot"><span class="pill warnP">Complete the three checks</span><button class="btn" data-apply="run-checks-2">Auto-apply steps</button></div>
+          </div>
+        </div>
+      </details>
     </div>
   </div>
 
-  <!-- ===== SIM 3: Frequency Stability Lab ===== -->
+  <!-- ===== SIM 3: Frequency Stability Lab + Concept Lesson ===== -->
   <h2 class="section-title">Frequency Stability Lab</h2>
   <p class="subtitle">Balance generation, load, inertia, and droop to hold 50/60 Hz.</p>
   <div class="sim">
@@ -234,40 +307,116 @@
       </div>
       <p class="status" id="freqStatus"></p>
     </div>
-    <div class="panel">
-      <label class="label" for="base">Nominal Frequency</label>
-      <input type="range" id="base" min="50" max="60" value="50"/>
-      <div class="value" id="baseV">50 Hz</div>
+    <div class="sidecol">
+      <div class="panel">
+        <label class="label" for="base">Nominal Frequency</label>
+        <input type="range" id="base" min="50" max="60" value="50"/>
+        <div class="value" id="baseV">50 Hz</div>
 
-      <label class="label" for="genPct">Generation (% of load)</label>
-      <input type="range" id="genPct" min="60" max="120" value="95"/>
-      <div class="value" id="genV">95%</div>
+        <label class="label" for="genPct">Generation (% of load)</label>
+        <input type="range" id="genPct" min="60" max="120" value="95"/>
+        <div class="value" id="genV">95%</div>
 
-      <label class="label" for="loadPct">Load (% base)</label>
-      <input type="range" id="loadPct" min="60" max="120" value="100"/>
-      <div class="value" id="loadV">100%</div>
+        <label class="label" for="loadPct">Load (% base)</label>
+        <input type="range" id="loadPct" min="60" max="120" value="100"/>
+        <div class="value" id="loadV">100%</div>
 
-      <label class="label" for="inertia">System Inertia</label>
-      <input type="range" id="inertia" min="1" max="10" value="3"/>
-      <div class="value" id="inertiaV">Low</div>
+        <label class="label" for="inertia">System Inertia</label>
+        <input type="range" id="inertia" min="1" max="10" value="3"/>
+        <div class="value" id="inertiaV">Low</div>
 
-      <label class="label" for="droop">Primary Droop (strength)</label>
-      <input type="range" id="droop" min="0" max="10" value="5"/>
-      <div class="value" id="droopV">Medium</div>
+        <label class="label" for="droop">Primary Droop (strength)</label>
+        <input type="range" id="droop" min="0" max="10" value="5"/>
+        <div class="value" id="droopV">Medium</div>
 
-      <div class="value" style="margin-top:10px">Try: Gen 80%, Inertia 2 → watch dip and UFLS.</div>
+        <div class="value" style="margin-top:10px">Try: Gen 80%, Inertia 2 → watch dip and UFLS.</div>
+      </div>
+
+      <!-- Lesson block for Sim 3 -->
+      <details class="lesson">
+        <summary>Lesson • Concept: <u>Frequency control: inertia, droop, UFLS</u></summary>
+        <div class="lesson-body">
+          <div class="card">
+            <h4>Definition</h4>
+            <p><b>Inertia</b> resists frequency change. <b>Droop control</b> adjusts generator output with frequency error. <b>UFLS</b> sheds load when frequency falls below thresholds.</p>
+          </div>
+          <div class="card">
+            <h4>Properties</h4>
+            <ul>
+              <li>RoCoF ∝ power imbalance ÷ inertia.</li>
+              <li>Stronger droop → larger primary response.</li>
+              <li>UFLS triggers stepwise load reduction below setpoints.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>Observations</h4>
+            <p>Lower inertia causes deeper and faster frequency dips. Increasing droop strength reduces steady-state error.</p>
+          </div>
+          <div class="card">
+            <h4>Guided test</h4>
+            <div class="check"><input type="checkbox" data-target="genPct" data-set="80"> <label>Set generation to 80% of load.</label></div>
+            <div class="check"><input type="checkbox" data-target="inertia" data-set="2"> <label>Set inertia to 2. Observe RoCoF.</label></div>
+            <div class="check"><input type="checkbox" data-target="droop" data-set="7"> <label>Increase droop to 7. Does recovery improve?</label></div>
+            <div class="lesson-foot"><span class="pill warnP">Complete the three checks</span><button class="btn" data-apply="run-checks-3">Auto-apply steps</button></div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ===== Final Lesson Quiz ===== -->
+  <h2 class="section-title">Wrap‑up • Guided Test</h2>
+  <p class="subtitle">Answer based on what you observed. Score provides instant feedback.</p>
+  <div class="panel" id="finalQuiz">
+    <div class="card">
+      <p><b>Q1.</b> During G5, which action immediately reduces transformer thermal risk the most?</p>
+      <label><input type="radio" name="q1" data-correct="false"> Increase generator C output from 20% to 25%</label><br/>
+      <label><input type="radio" name="q1" data-correct="true"> Shed 10% load and raise shielding</label><br/>
+      <label><input type="radio" name="q1" data-correct="false"> Switch nominal frequency 50→60 Hz</label>
+    </div>
+    <div class="card" style="margin-top:8px">
+      <p><b>Q2.</b> Which corridor is most exposed to GIC under high dB/dt?</p>
+      <label><input type="radio" name="q2" data-correct="true"> Long E–W line at high latitude and high conductivity</label><br/>
+      <label><input type="radio" name="q2" data-correct="false"> Short N–S line at low latitude and low conductivity</label>
+    </div>
+    <div class="card" style="margin-top:8px">
+      <p><b>Q3.</b> Reducing inertia while generation < load causes:</p>
+      <label><input type="radio" name="q3" data-correct="true"> Faster frequency drop and deeper nadir</label><br/>
+      <label><input type="radio" name="q3" data-correct="false"> Slower frequency change and higher nadir</label>
+    </div>
+    <div class="lesson-foot" style="margin-top:10px">
+      <button class="btn" id="submitFinal">Submit</button>
+      <span class="value" id="finalScore">Score: –</span>
     </div>
   </div>
 </div>
 
 <script>
 /* ===== shared quiz handler ===== */
-document.addEventListener('click',e=>{
+addEventListener('click',e=>{
   const b=e.target.closest('.quiz button'); if(!b) return;
   const box=b.closest('.quiz'); const res=box.querySelector('[data-result]');
   const ok=b.getAttribute('data-correct')==='true';
   res.textContent= ok?'Correct ✅':'Try again';
   res.className='value '+(ok?'ok':'no');
+});
+
+/* ===== helper: apply guided test steps ===== */
+addEventListener('click',e=>{
+  const apply=e.target.getAttribute('data-apply'); if(!apply) return;
+  if(apply==='run-checks-1'){ geomagneticStorm.value=5; shielding.value=80; genA.value=0; updateSim1(); }
+  if(apply==='run-checks-2'){ lat2.value=70; dir2.value=90; cond2.value=90; updateGIC(); }
+  if(apply==='run-checks-3'){ genPct.value=80; inertia.value=2; droop.value=7; }
+});
+
+/* ===== check toggles auto-write to sliders ===== */
+addEventListener('change',e=>{
+  if(e.target.matches('.check input[type="checkbox"][data-target]')){
+    const id=e.target.getAttribute('data-target');
+    const val=e.target.getAttribute('data-set');
+    const el=document.getElementById(id);
+    if(el){ el.value=val; const fn = (id==='storm'||id==='lat'||id==='cond'||id==='dir')? updateGIC : (id==='geomagneticStorm'||id==='gridLoad'||id==='transformerTemp'||id==='shielding'||id==='genA'||id==='genB'||id==='genC')? updateSim1 : ()=>{}; fn(); }
+  }
 });
 
 /* ===== SIM 1 script ===== */
@@ -411,7 +560,7 @@ function buildMap(){
     mapEl.appendChild(l); links.push({el:l,ang:((ang%180)+180)%180});
   });
 }
-buildMap(); window.addEventListener('resize',buildMap);
+buildMap(); addEventListener('resize',buildMap);
 
 function updateGIC(){
   stormV.textContent='G'+storm2.value;
@@ -516,6 +665,20 @@ function step(){
 }
 [base,genPct,loadPct,inertia,droop].forEach(e=>e.addEventListener('input',()=>{}));
 setInterval(step,100); step();
+
+/* ===== Final quiz scoring ===== */
+const submitFinal=document.getElementById('submitFinal');
+const finalScore=document.getElementById('finalScore');
+submitFinal?.addEventListener('click',()=>{
+  const groups=['q1','q2','q3'];
+  let score=0;
+  groups.forEach(name=>{
+    const checked=[...document.querySelectorAll(`input[name="${name}"]:checked`)][0];
+    if(checked && checked.dataset.correct==='true') score++;
+  });
+  finalScore.textContent = `Score: ${score}/3`;
+  finalScore.className='value '+(score===3?'ok':score>=2?'ok':'no');
+});
 </script>
 </body>
 </html>

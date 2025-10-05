@@ -30,6 +30,14 @@
   .ok{background:rgba(156,255,110,.15);color:var(--ok)}
   .warn{background:rgba(255,209,102,.15);color:var(--warn)}
   .bad{background:rgba(255,107,107,.15);color:var(--bad);animation:blink 1s infinite}
+  details.lesson{margin-top:12px;border-top:1px dashed var(--border);padding-top:12px}
+  details.lesson summary{cursor:pointer;font-weight:800;color:var(--accent);margin-bottom:8px}
+  .quiz{margin-top:10px;border:1px dashed var(--border);border-radius:12px;padding:12px}
+  .quiz h4{margin-bottom:8px;color:var(--accent)}
+  .quiz .q{margin:8px 0}
+  .quiz .q label{font-weight:600;color:var(--text)}
+  .quiz .result{margin-top:8px;font-family:ui-monospace,Menlo,monospace}
+  .k{font-family:ui-monospace,Menlo,monospace;background:rgba(255,209,102,.12);padding:2px 6px;border-radius:8px}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.75}}
   @media(max-width:900px){.grid{grid-template-columns:1fr}canvas{height:340px}}
 </style>
@@ -40,13 +48,12 @@
     <h1>
       <a class="back" href="..">← Back</a>
       <a>~</a>
-      / 
+      /
       <a href=".."> Space Weather Stories</a>
       /
       <a href="#">Solar Flare Lab</a>
-    /
-  </h1>
-      
+      /
+    </h1>
   </div>
 
   <!-- SIM 1: Active Region & Flare Loops -->
@@ -81,6 +88,38 @@
         </div>
       </div>
     </div>
+
+    <!-- LESSON 1 -->
+    <details class="lesson" open>
+      <summary>Concept guide: Active regions → shear → flare likelihood</summary>
+      <ul>
+        <li><b>Definition.</b> An <span class="k">active region</span> is a solar area with strong magnetic fields. Hale class (α, β, βγ, βγδ) encodes magnetic complexity.</li>
+        <li><b>Properties.</b> Higher complexity and larger <span class="k">shear/twist</span> increase magnetic free energy and flare probability.</li>
+        <li><b>Observations.</b> Bright coronal loops arch between opposite polarities. Flares appear as impulsive brightenings and particle ejections.</li>
+        <li><b>How to use.</b> Set class to βγ or βγδ and raise shear. Watch flare probability and triggered bursts.</li>
+      </ul>
+      <div class="quiz">
+        <h4>Guided test — AR basics</h4>
+        <form id="q1">
+          <div class="q">
+            1) Which setting most increases flare chance?
+            <br>
+            <label><input type="radio" name="q1a" value="A"> α class, low shear</label><br>
+            <label><input type="radio" name="q1a" value="B"> βγδ class, high shear</label><br>
+            <label><input type="radio" name="q1a" value="C"> Any class, zero shear</label>
+          </div>
+          <div class="q">
+            2) Coronal loops connect:
+            <br>
+            <label><input type="radio" name="q1b" value="A"> Temperature layers</label><br>
+            <label><input type="radio" name="q1b" value="B"> Magnetic polarities</label><br>
+            <label><input type="radio" name="q1b" value="C"> Sunspots to Earth</label>
+          </div>
+          <button type="button" class="btn" onclick="grade('q1',{q1a:'B',q1b:'B'})">Check</button>
+          <div class="result" id="q1_result"></div>
+        </form>
+      </div>
+    </details>
   </div>
 
   <!-- SIM 2: GOES X-ray light curve -->
@@ -114,6 +153,38 @@
         </div>
       </div>
     </div>
+
+    <!-- LESSON 2 -->
+    <details class="lesson" open>
+      <summary>Concept guide: GOES classes and flare shapes</summary>
+      <ul>
+        <li><b>Definition.</b> GOES soft X-ray flux in W/m² defines classes: C=10⁻⁶, M=10⁻⁵, X=10⁻⁴ baseline, with decimal multipliers.</li>
+        <li><b>Properties.</b> Light curves show <span class="k">rise</span> and <span class="k">decay</span>. Peak class maps to the curve maximum.</li>
+        <li><b>Observations.</b> Higher background shifts the whole curve upward and can hide small events.</li>
+        <li><b>How to use.</b> Choose class and duration, inject a flare, read peak and times.</li>
+      </ul>
+      <div class="quiz">
+        <h4>Guided test — GOES scale</h4>
+        <form id="q2">
+          <div class="q">
+            1) An X2.0 peak equals:
+            <br>
+            <label><input type="radio" name="q2a" value="A"> 2×10⁻⁵ W/m²</label><br>
+            <label><input type="radio" name="q2a" value="B"> 2×10⁻⁴ W/m²</label><br>
+            <label><input type="radio" name="q2a" value="C"> 2×10⁻⁶ W/m²</label>
+          </div>
+          <div class="q">
+            2) Increasing background mainly:
+            <br>
+            <label><input type="radio" name="q2b" value="A"> Lowers peak class</label><br>
+            <label><input type="radio" name="q2b" value="B"> Raises baseline flux</label><br>
+            <label><input type="radio" name="q2b" value="C"> Shortens decay</label>
+          </div>
+          <button type="button" class="btn" onclick="grade('q2',{q2a:'B',q2b:'B'})">Check</button>
+          <div class="result" id="q2_result"></div>
+        </form>
+      </div>
+    </details>
   </div>
 
   <!-- SIM 3: CME propagation to Earth -->
@@ -143,6 +214,38 @@
         </div>
       </div>
     </div>
+
+    <!-- LESSON 3 -->
+    <details class="lesson" open>
+      <summary>Concept guide: CME geometry and geoeffectiveness</summary>
+      <ul>
+        <li><b>Definition.</b> A <span class="k">CME</span> is a large ejection of plasma and magnetic field from the Sun.</li>
+        <li><b>Properties.</b> <span class="k">Speed</span> sets ETA. <span class="k">Width</span> and <span class="k">launch longitude</span> set whether Earth sits inside the cone.</li>
+        <li><b>Observations.</b> Disk-center launches with wide cones are most likely to hit Earth.</li>
+        <li><b>How to use.</b> Adjust speed, width, and longitude. Watch ETA and the geoeffective flag.</li>
+      </ul>
+      <div class="quiz">
+        <h4>Guided test — CME hits</h4>
+        <form id="q3">
+          <div class="q">
+            1) Shortest ETA results from:
+            <br>
+            <label><input type="radio" name="q3a" value="A"> 500 km/s</label><br>
+            <label><input type="radio" name="q3a" value="B"> 1500 km/s</label><br>
+            <label><input type="radio" name="q3a" value="C"> Speed does not matter</label>
+          </div>
+          <div class="q">
+            2) Most geoeffective geometry:
+            <br>
+            <label><input type="radio" name="q3b" value="A"> Narrow CME at ±70°</label><br>
+            <label><input type="radio" name="q3b" value="B"> Wide CME near 0°</label><br>
+            <label><input type="radio" name="q3b" value="C"> Any CME at −80°</label>
+          </div>
+          <button type="button" class="btn" onclick="grade('q3',{q3a:'B',q3b:'B'})">Check</button>
+          <div class="result" id="q3_result"></div>
+        </form>
+      </div>
+    </details>
   </div>
 
   <!-- SIM 4: Day-side radio blackout map (R-scale) -->
@@ -175,6 +278,72 @@
         </div>
       </div>
     </div>
+
+    <!-- LESSON 4 -->
+    <details class="lesson" open>
+      <summary>Concept guide: R-scale and daylight geometry</summary>
+      <ul>
+        <li><b>Definition.</b> The <span class="k">R-scale</span> (R1–R5) rates HF radio blackout severity from flare X-rays on the daylit hemisphere.</li>
+        <li><b>Properties.</b> Higher class and multiplier raise R. Effects follow the subsolar point across Earth’s rotation.</li>
+        <li><b>Observations.</b> R3+ degrades HF and affects aviation comms and GNSS accuracy on the sunlit side.</li>
+        <li><b>How to use.</b> Set class and multiplier, click the map to move the subsolar point, observe day/night split.</li>
+      </ul>
+      <div class="quiz">
+        <h4>Guided test — R-scale</h4>
+        <form id="q4">
+          <div class="q">
+            1) Strongest impact location:
+            <br>
+            <label><input type="radio" name="q4a" value="A"> Night hemisphere</label><br>
+            <label><input type="radio" name="q4a" value="B"> Day hemisphere near subsolar point</label><br>
+            <label><input type="radio" name="q4a" value="C"> Polar night</label>
+          </div>
+          <div class="q">
+            2) Raising class from M to X:
+            <br>
+            <label><input type="radio" name="q4b" value="A"> Lowers R</label><br>
+            <label><input type="radio" name="q4b" value="B"> Raises R</label><br>
+            <label><input type="radio" name="q4b" value="C"> No change</label>
+          </div>
+          <button type="button" class="btn" onclick="grade('q4',{q4a:'B',q4b:'B'})">Check</button>
+          <div class="result" id="q4_result"></div>
+        </form>
+      </div>
+    </details>
+  </div>
+
+  <!-- FINAL REVIEW -->
+  <div class="section card">
+    <h2>Lesson review — Integrated check</h2>
+    <p>Answer using what you observed in all four simulators.</p>
+    <div class="quiz">
+      <h4>Mixed quiz</h4>
+      <form id="qFinal">
+        <div class="q">
+          1) A βγδ region with high shear produces an X-class flare. Which immediate terrestrial impact is most likely?
+          <br>
+          <label><input type="radio" name="f1" value="A"> HF blackout on night side</label><br>
+          <label><input type="radio" name="f1" value="B"> HF blackout on day side</label><br>
+          <label><input type="radio" name="f1" value="C"> No comms effect</label>
+        </div>
+        <div class="q">
+          2) A 1200 km/s, 90° CME launched near 0° longitude:
+          <br>
+          <label><input type="radio" name="f2" value="A"> Likely Earth-directed with ~30–40 h ETA</label><br>
+          <label><input type="radio" name="f2" value="B"> Misses Earth due to speed</label><br>
+          <label><input type="radio" name="f2" value="C"> ETA independent of speed</label>
+        </div>
+        <div class="q">
+          3) On a log plot, which is larger?
+          <br>
+          <label><input type="radio" name="f3" value="A"> C9.9</label><br>
+          <label><input type="radio" name="f3" value="B"> M1.0</label><br>
+          <label><input type="radio" name="f3" value="C"> Equal</label>
+        </div>
+        <button type="button" class="btn" onclick="grade('qFinal',{f1:'B',f2:'A',f3:'B'})">Submit</button>
+        <div class="result" id="qFinal_result"></div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -186,6 +355,21 @@ function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function lerp(a,b,t){return a+(b-a)*t}
 function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
 
+/* ===== simple quiz grader ===== */
+function grade(formId, key){
+  const form=document.getElementById(formId);
+  const out=document.getElementById(formId+'_result');
+  let correct=0,total=0,miss=[];
+  for(const k in key){
+    total++;
+    const val=(new FormData(form)).get(k);
+    if(val===key[k]) correct++; else miss.push(k);
+  }
+  const score=`${correct}/${total}`;
+  const cls = correct===total?'ok': correct/total>=0.6?'warn':'bad';
+  out.innerHTML=`<span class="badge ${cls}">Score ${score}</span> ${miss.length?(' • Review: '+miss.join(', ')):' • Perfect'}`;
+}
+
 /* ===== SIM 1: Active Region & Loops ===== */
 (function(){
   const c=document.getElementById('arCanvas'), ctx=c.getContext('2d');
@@ -195,10 +379,7 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
   let t=0, run=true, loops=[], sparks=[], lastClass='C5.4';
 
   function compMult(){ return {alpha:0.4,beta:1.0,betagamma:1.6,betagammadelta:2.4}[hale.value] }
-  function flareProbPerFrame(){ // per minute scaled ~ complexity * shear
-    const base=0.04; // base/min
-    return (base*compMult()*(+shear.value+0.1))/3600*60; // per frame (60fps)
-  }
+  function flareProbPerFrame(){ const base=0.04; return (base*compMult()*(+shear.value+0.1))/3600*60; }
   function spawnLoop(){
     const {w,h}=fit(c,ctx);
     const R=Math.min(w,h)*0.36;
@@ -211,11 +392,10 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
   function flareBurst(force=false){
     const chance=flareProbPerFrame();
     if(!force && Math.random()>chance*180) return;
-    const clsIdx=compMult()+(+shear.value>0.6?0.6:0); // rough scaling
+    const clsIdx=compMult()+(+shear.value>0.6?0.6:0);
     const classBands=['C','M','X']; const pick = clsIdx>2?2: clsIdx>1.2?1:0;
-    const mult = (5+Math.floor(Math.random()*5))/10; // .5..1.0 shown as x? conservatively
+    const mult = (5+Math.floor(Math.random()*5))/10;
     lastClass = classBands[pick]+( (pick? (1+Math.floor(Math.random()*9)) : (1+Math.floor(Math.random()*9))) ).toFixed(0)+'.'+Math.floor(mult*10);
-    // blast particles
     const {w,h}=fit(c,ctx); const cx=w/2, cy=h/2;
     for(let i=0;i<120;i++){
       const ang=Math.random()*Math.PI*2, sp=2+Math.random()*4*(1+pick);
@@ -225,14 +405,12 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
 
   function draw(){
     const {w,h}=fit(c,ctx); const cx=w/2, cy=h/2;
-    // background + solar limb
     ctx.clearRect(0,0,w,h);
     const rad=Math.min(w,h)*0.42;
     const gSun=ctx.createRadialGradient(cx,cy,rad*0.2,cx,cy,rad*1.2);
     gSun.addColorStop(0,'#fff2b3'); gSun.addColorStop(.35,'#ffb703'); gSun.addColorStop(.65,'#ff8800'); gSun.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=gSun; ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2); ctx.fill();
 
-    // magnetogram speckles
     for(let i=0;i<220;i++){
       const a=Math.random()*Math.PI*2, r=rad*(0.1+Math.random()*0.9);
       const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
@@ -240,7 +418,6 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
       ctx.fillStyle=pol; ctx.fillRect(x,y,2,2);
     }
 
-    // existing loops
     for(const L of loops){
       const steps=40;
       for(let i=0;i<steps;i++){
@@ -254,11 +431,10 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
         }
         loops._px=x; loops._py=y;
       }
-      L.life--; 
+      L.life--;
     }
     loops=loops.filter(L=>L.life>0);
 
-    // sparks
     for(const s of sparks){
       ctx.fillStyle='rgba(255,220,160,.8)';
       ctx.beginPath(); ctx.arc(s.x,s.y,2.2,0,Math.PI*2); ctx.fill();
@@ -286,12 +462,12 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
   const c=document.getElementById('goesCanvas'), ctx=c.getContext('2d');
   const baseFlux=document.getElementById('baseFlux'), peakClass=document.getElementById('peakClass'), dur=document.getElementById('dur');
   const read=document.getElementById('readout2'), pause=document.getElementById('pause2'), inject=document.getElementById('inject2');
-  let run=true, t=0, series=new Array(720).fill(1e-7); // 12h @1min bins (A-class floor)
+  let run=true, t=0, series=new Array(720).fill(1e-7);
 
   function classToFlux(cls){return {A:1e-8,B:1e-7,C:1e-6,M:1e-5,X:1e-4}[cls]}
   function bg(){return [classToFlux('A'),classToFlux('B'),classToFlux('C')][+baseFlux.value]}
   function injectFlare(){
-    const peak=classToFlux(peakClass.value)*(0.1+ (Math.random()*0.9)); // class ±
+    const peak=classToFlux(peakClass.value)*(0.1+ (Math.random()*0.9));
     const rise=Math.max(3, Math.round(+dur.value*0.25));
     const decay=Math.max(8, Math.round(+dur.value*0.75));
     const at = Math.floor(series.length*0.2 + Math.random()*series.length*0.6);
@@ -306,17 +482,12 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
 
   function draw(){
     const {w,h}=fit(c,ctx); ctx.clearRect(0,0,w,h);
-    // scroll
     series.shift(); series.push(bg()*(1+0.2*Math.sin(t*0.02))+series[series.length-1]*0.0);
-    // axes
     ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
     ctx.strokeRect(50,20,w-70,h-60);
-    // log grid and class lines
     const classes=[['A',1e-8,'#9CFF6E'],['B',1e-7,'#7cf4ff'],['C',1e-6,'#FFD166'],['M',1e-5,'#ff6b6b'],['X',1e-4,'#B28DFF']];
     function yFor(v){const ymin=1e-8,ymax=1e-3; const log= (Math.log10(v)-Math.log10(ymin))/(Math.log10(ymax)-Math.log10(ymin)); return 20+(h-60)*(1-log)}
     classes.forEach(([lbl,val,col])=>{ const y=yFor(val); ctx.strokeStyle=col; ctx.setLineDash([6,6]); ctx.beginPath(); ctx.moveTo(50,y); ctx.lineTo(w-20,y); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; ctx.fillText(lbl, 18, y+4); });
-
-    // curve
     ctx.beginPath();
     for(let i=0;i<series.length;i++){
       const x=50 + (w-70)*i/(series.length-1);
@@ -349,7 +520,7 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
     if(waves.length>6) waves.shift();
     updateRead();
   }
-  function etaHours(){ return Math.round((1.496e8 / (+sp.value*0.001)) / 3600) } // 1 AU, km/s -> hours
+  function etaHours(){ return Math.round((1.496e8 / (+sp.value*0.001)) / 3600) }
   function updateRead(){
     const hit = Math.abs(+lon.value) < (+wd.value/2);
     read.textContent=`Speed: ${+sp.value} km/s · Width: ${+wd.value}° · ETA: ${etaHours()} h `;
@@ -359,14 +530,12 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
   function draw(){
     const {w,h}=fit(c,ctx);
     ctx.clearRect(0,0,w,h);
-    // Sun and Earth
     const sx=w*0.28, sy=h*0.52, sr=Math.min(w,h)*0.18;
     const g=ctx.createRadialGradient(sx,sy,sr*0.2,sx,sy,sr*1.2);
     g.addColorStop(0,'#fff2b3'); g.addColorStop(.4,'#ffb703'); g.addColorStop(.8,'#ff8800'); g.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sx,sy,sr,0,Math.PI*2); ctx.fill();
     const ex=w*0.85, ey=h*0.52; ctx.fillStyle='#7ab8ff'; ctx.beginPath(); ctx.arc(ex,ey,8,0,Math.PI*2); ctx.fill();
 
-    // Parker spiral hint
     ctx.strokeStyle='rgba(124,244,255,.12)';
     for(let i=0;i<4;i++){
       ctx.beginPath();
@@ -378,9 +547,8 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
       ctx.stroke();
     }
 
-    // waves
     waves.forEach(wv=>{
-      wv.age += (+sp.value/900); // faster → faster growth
+      wv.age += (+sp.value/900);
       const R= sr + wv.age*2.2;
       const half= wv.width*Math.PI/180/2;
       const a0= wv.lam - half, a1= wv.lam + half;
@@ -395,7 +563,6 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
       ctx.fillStyle=`rgba(255,209,102,${0.18+0.35*fade})`; ctx.fill(path);
       ctx.strokeStyle=`rgba(255,120,120,${0.25*fade})`; ctx.lineWidth=2; ctx.stroke(path);
 
-      // shock front indicator
       ctx.strokeStyle=`rgba(178,141,255,${0.28*fade})`; ctx.setLineDash([6,6]);
       ctx.beginPath();
       ctx.ellipse(sx,sy,R+12,(R+12)*0.9,0,a0,a1);
@@ -416,46 +583,41 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
   const c=document.getElementById('rmapCanvas'), ctx=c.getContext('2d');
   const rClass=document.getElementById('rClass'), rMult=document.getElementById('rMult'), rot=document.getElementById('rot');
   const read=document.getElementById('readout4'), flag=document.getElementById('flag4'), pause=document.getElementById('pause4');
-  let run=true, t=0, sublon=0; // deg
+  let run=true, t=0, sublon=0;
 
   c.addEventListener('click',e=>{
-    const r=c.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
-    const {w,h}=fit(c,ctx); const lon = (x/w)*360 - 180; sublon=lon;
+    const r=c.getBoundingClientRect(), x=e.clientX-r.left;
+    const {w}=fit(c,ctx); const lon = (x/w)*360 - 180; sublon=lon;
   });
 
   function rScale(){
-    const cls=rClass.value; const mult= (+rMult.value)/10; // 1.0..9.9
-    const base={C:1,M:3,X:5}[cls]; // R1,R3,R5 rough
+    const cls=rClass.value; const mult= (+rMult.value)/10;
+    const base={C:1,M:3,X:5}[cls];
     const r = base + (mult>5?1:0);
     return clamp(Math.round(r),1,5);
   }
 
   function draw(){
     const {w,h}=fit(c,ctx); ctx.clearRect(0,0,w,h);
-    // globe
     const cx=w/2, cy=h/2, R=Math.min(w,h)*0.42;
     const g=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.2,cx,cy,R);
     g.addColorStop(0,'#0f2b55'); g.addColorStop(1,'#061a3b');
     ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fill();
 
-    // graticule
     ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1;
     for(let la=10; la<=80; la+=10){ ctx.beginPath(); ctx.arc(cx,cy,R*(la/90),0,Math.PI*2); ctx.stroke(); }
     for(let k=0;k<12;k++){ const a=k*Math.PI/6; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*R, cy+Math.sin(a)*R); ctx.stroke(); }
 
-    // rotation
     const speed=+rot.value; sublon = (sublon + 0.05*speed) % 360;
 
-    // day/night terminator from subsolar lon
     const sub = (sublon/180)*Math.PI;
     ctx.fillStyle='rgba(0,0,0,.30)';
-    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R, sub+Math.PI*0.5, sub+Math.PI*1.5); ctx.closePath(); ctx.fill(); // night sector
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R, sub+Math.PI*0.5, sub+Math.PI*1.5); ctx.closePath(); ctx.fill();
 
-    // blackout strength on day side
-    const Rlvl=rScale(); // 1..5
+    const Rlvl=rScale();
     for(let i=0;i<180;i++){
-      const a = sub - Math.PI*0.5 + (i/179)*Math.PI; // day arc
-      const strength = (1 - Math.abs(i-90)/90); // center strongest
+      const a = sub - Math.PI*0.5 + (i/179)*Math.PI;
+      const strength = (1 - Math.abs(i-90)/90);
       const k = (Rlvl/5)*strength;
       const rin = R*0.2, rout=R*(0.95 - 0.1*(1-strength));
       ctx.strokeStyle = `rgba(255,120,120,${0.18+0.35*k})`;
@@ -464,7 +626,6 @@ function badge(el,kind,text){el.className='badge '+kind; el.textContent=text}
       ctx.lineTo(cx+Math.cos(a)*rout, cy+Math.sin(a)*rout); ctx.stroke();
     }
 
-    // legend
     const labs=['R1 minor','R2 moderate','R3 strong','R4 severe','R5 extreme'];
     read.textContent = `Class: ${rClass.value}${(+rMult.value/10).toFixed(1)} · ${labs[Rlvl-1]} · HF degraded over daylight hemisphere `;
     badge(flag, Rlvl>=4?'bad':Rlvl>=3?'warn':'ok', Rlvl>=4?'critical':Rlvl>=3?'impact':'notice');
