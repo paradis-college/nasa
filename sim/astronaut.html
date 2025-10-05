@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Astronaut Radiation — Mission & Shield Lab</title>
+<style>
+  :root{
+    --bg:#0a0e1a;--card:#1a2540;--text:#e9f2ff;--accent:#B28DFF;--border:rgba(178,141,255,.35);
+    --ok:#9CFF6E;--warn:#FFD166;--bad:#ff6b6b;--cyan:#7cf4ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:ui-rounded,system-ui,sans-serif;background:linear-gradient(180deg,#0a0e1a,#1a1035);color:var(--text);min-height:100vh;padding:20px}
+  .container{max-width:1200px;margin:0 auto}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+  h1{font-size:2rem;color:var(--accent)}
+  a.back{padding:10px 18px;border:2px solid var(--border);border-radius:12px;color:var(--accent);text-decoration:none;background:rgba(178,141,255,.15)}
+  .section{margin-top:28px}
+  .card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:18px}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:16px}
+  canvas{width:100%;height:420px;display:block;border-radius:12px;background:#0d1030}
+  .controls .row{margin-bottom:14px}
+  label{display:block;font-weight:800;font-size:.95rem;color:var(--accent);margin-bottom:6px}
+  input[type="range"],select{width:100%}
+  .value{font-family:ui-monospace,Menlo,monospace;font-size:.9rem;opacity:.95}
+  .btn{background:linear-gradient(180deg,#2e8cff,#1e6bd6);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
+  .btn.secondary{background:linear-gradient(180deg,#6fe6c2,#3abf9e);color:#00372b}
+  .btnrow{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .note{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;margin-top:10px}
+  .dyk{margin-top:12px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);border-radius:12px;padding:12px}
+  .dyk h3{font-size:.95rem;color:var(--accent);margin-bottom:6px}
+  .quiz{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .quiz button{background:rgba(178,141,255,.18);color:var(--accent);border:1px solid var(--border);border-radius:10px;padding:6px 10px;font-weight:800;cursor:pointer}
+  .quiz .ok{color:#0f5132;background:rgba(111,230,194,.2);border-color:rgba(111,230,194,.5)}
+  .quiz .no{color:#842029;background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.5)}
+  .pill{display:inline-block;padding:4px 8px;border-radius:9999px;font-weight:800}
+  .pill.ok{background:rgba(156,255,110,.15);color:var(--ok)}
+  .pill.warn{background:rgba(255,209,102,.15);color:var(--warn)}
+  .pill.bad{background:rgba(255,107,107,.15);color:var(--bad);animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.75}}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}canvas{height:340px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a class="back" href="..">← Back</a>
+    <h1>
+      <a href="" >~</a>
+      / 
+      <a href = ".."> Solar Weather Stories </a>
+      /
+      <a href="#">Astronaut Radiation — Mission & Shield Lab</a>
+    </h1>
+  </div>
+
+  <!-- SIM 1: SPE Particle Storm vs Station Shelter (live dosimeter) -->
+  <div class="section card">
+    <h2>Simulator 1 — Solar Particle Storm vs Station Shelter</h2>
+    <p class="note">See proton flux surge, watch dose rate drop as shielding increases. EVA spikes risk fast.</p>
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <canvas id="speCanvas"></canvas>
+        <div class="btnrow">
+          <button id="pause1" class="btn secondary">Pause</button>
+          <span class="value" id="readout1">S-level: S3 · Shield: 70% · EVA: 2.0 h · Dose: 8.6 mSv/day <span id="badge1" class="pill warn">elevated</span></span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="sLevel">Solar particle event (S1–S5)</label>
+          <input id="sLevel" type="range" min="1" max="5" value="3"/>
+        </div>
+        <div class="row">
+          <label for="shieldPct">Shelter shielding (%)</label>
+          <input id="shieldPct" type="range" min="0" max="100" value="70"/>
+        </div>
+        <div class="row">
+          <label for="evaHrs">EVA time (h)</label>
+          <input id="evaHrs" type="range" min="0" max="8" step="0.5" value="2"/>
+        </div>
+      </div>
+    </div>
+    <div class="dyk">
+      <h3>Did you know?</h3>
+      <p>Water and plastic stop protons better than aluminum per kilogram.</p>
+      <div class="quiz" data-quiz="q1">
+        <span class="value">Quiz:</span>
+        <button data-correct="true">Water beats aluminum</button>
+        <button data-correct="false">Aluminum always best</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIM 2: EVA Countdown — “Get Inside” Timer with Dose Ramp -->
+  <div class="section card">
+    <h2>Simulator 2 — EVA Countdown: get to shelter</h2>
+    <p class="note">Flare warning arrives. Timer runs. Closer shelter + more shielding = lower dose.</p>
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <canvas id="evaCanvas"></canvas>
+        <div class="btnrow">
+          <button id="pause2" class="btn secondary">Pause</button>
+          <button id="reset2" class="btn">New Warning</button>
+          <span class="value" id="readout2">ETA: 10:00 · Speed: 1.4 m/s · Path: 42 m · Pred. dose: 12.3 mSv <span id="badge2" class="pill bad">urgent</span></span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="pathLen">Distance to shelter (m)</label>
+          <input id="pathLen" type="range" min="10" max="120" value="42"/>
+        </div>
+        <div class="row">
+          <label for="walkSpd">EVA speed (m/s)</label>
+          <input id="walkSpd" type="range" min="0.5" max="2.0" step="0.1" value="1.4"/>
+        </div>
+        <div class="row">
+          <label for="sHelm">Suit shielding (%)</label>
+          <input id="sHelm" type="range" min="0" max="40" value="15"/>
+        </div>
+        <div class="row">
+          <label for="storm">Storm strength</label>
+          <input id="storm" type="range" min="1" max="5" value="4"/>
+        </div>
+      </div>
+    </div>
+    <div class="dyk">
+      <h3>Did you know?</h3>
+      <p>Big proton storms rise over minutes to hours. Warnings matter.</p>
+      <div class="quiz" data-quiz="q2">
+        <span class="value">Quiz:</span>
+        <button data-correct="true">Minutes to hours</button>
+        <button data-correct="false">Instant like light</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIM 3: Shield Designer — Layered Materials & Areal Density -->
+  <div class="section card">
+    <h2>Simulator 3 — Shield designer (layer stack)</h2>
+    <p class="note">Stack water, polyethylene, and aluminum. Watch areal density and expected dose.</p>
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <canvas id="shieldCanvas"></canvas>
+        <div class="btnrow">
+          <button id="pause3" class="btn secondary">Pause</button>
+          <span class="value" id="readout3">H₂O: 12 cm · PE: 6 cm · Al: 2 cm · Σρt: 24.5 g/cm² · Dose: 3.1 mSv/day <span id="badge3" class="pill ok">good</span></span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="h2o">Water thickness (cm)</label>
+          <input id="h2o" type="range" min="0" max="30" value="12"/>
+        </div>
+        <div class="row">
+          <label for="pe">Polyethylene (cm)</label>
+          <input id="pe" type="range" min="0" max="20" value="6"/>
+        </div>
+        <div class="row">
+          <label for="al">Aluminum (cm)</label>
+          <input id="al" type="range" min="0" max="10" value="2"/>
+        </div>
+        <div class="row">
+          <label for="stormS3">Storm level (S1–S5)</label>
+          <input id="stormS3" type="range" min="1" max="5" value="3"/>
+        </div>
+      </div>
+    </div>
+    <div class="dyk">
+      <h3>Did you know?</h3>
+      <p>Hydrogen-rich materials make fewer dangerous secondaries than metals.</p>
+      <div class="quiz" data-quiz="q3">
+        <span class="value">Quiz:</span>
+        <button data-correct="true">PE/water preferred</button>
+        <button data-correct="false">Thick metal only</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIM 4: Avionics Upset Risk — SEU vs Shield + Storm -->
+  <div class="section card">
+    <h2>Simulator 4 — Avionics upset risk</h2>
+    <p class="note">Electronics bit-flips climb with flux. Shielding helps, but watch secondaries.</p>
+    <div class="grid" style="margin-top:10px">
+      <div>
+        <canvas id="seuCanvas"></canvas>
+        <div class="btnrow">
+          <button id="pause4" class="btn secondary">Pause</button>
+          <span class="value" id="readout4">Flux: high · Shield: 15 g/cm² · SEU: 3.2/h · Safe mode risk: medium</span>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="row">
+          <label for="flux">Particle flux (rel.)</label>
+          <input id="flux" type="range" min="0" max="100" value="70"/>
+        </div>
+        <div class="row">
+          <label for="areald">Areal density (g/cm²)</label>
+          <input id="areald" type="range" min="0" max="40" value="15"/>
+        </div>
+        <div class="row">
+          <label for="ecc">Memory ECC</label>
+          <select id="ecc">
+            <option value="none">none</option>
+            <option value="secded" selected>SECDED</option>
+            <option value="tmr">TMR</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="dyk">
+      <h3>Did you know?</h3>
+      <p>ECC and voting logic cut failures even when flux stays high.</p>
+      <div class="quiz" data-quiz="q4">
+        <span class="value">Quiz:</span>
+        <button data-correct="true">ECC lowers SEU rate</button>
+        <button data-correct="false">ECC raises SEU rate</button>
+        <span class="value" data-result></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== helpers ===== */
+const DPR=()=>window.devicePixelRatio||1;
+function fit(c,ctx){const w=c.clientWidth||800,h=c.clientHeight||420;c.width=Math.round(w*DPR());c.height=Math.round(h*DPR());ctx.setTransform(DPR(),0,0,DPR(),0,0);return{w,h}}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function map(v,a,b,c,d){return c+(v-a)*(d-c)/(b-a)}
+function badge(el,kind,text){el.className='pill '+kind; el.textContent=text}
+
+/* ===== micro-quiz ===== */
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('.quiz button'); if(!btn) return;
+  const box=btn.closest('.quiz'); const res=box.querySelector('[data-result]');
+  const ok=btn.getAttribute('data-correct')==='true';
+  res.textContent= ok?'Correct ✅':'Try again';
+  res.className='value '+(ok?'ok':'no');
+});
+
+/* ===== SIM 1: SPE vs Shelter ===== */
+(function(){
+  const c=document.getElementById('speCanvas'), ctx=c.getContext('2d');
+  const s=document.getElementById('sLevel'), sh=document.getElementById('shieldPct'), eva=document.getElementById('evaHrs');
+  const read=document.getElementById('readout1'), badgeEl=document.getElementById('badge1'); const pause=document.getElementById('pause1');
+  let t=0, run=true, particles=[];
+
+  function fluxBase(S){ return [1,3,10,30,90][S-1] } // relative
+  function dailyDose(S,shieldPct,evaH){
+    const quiet=0.5; // mSv/day baseline
+    const storm=fluxBase(S)*0.12; // add from SPE
+    const evaMult=1 + (evaH/8)*3.0; // outside increases
+    const shieldEff=1 - (shieldPct/100)*0.9; // 90% max reduction
+    return (quiet+storm)*evaMult*shieldEff;
+  }
+
+  function emit(){
+    const {w,h}=fit(c,ctx);
+    const S=+s.value, flux=fluxBase(S);
+    const n=3+Math.floor(map(flux,1,90,2,40));
+    for(let i=0;i<n;i++){
+      const ang=Math.random()*Math.PI*2;
+      const r=20+Math.random()*40;
+      particles.push({x:w/2+Math.cos(ang)*r, y:h/2+Math.sin(ang)*r, vx:(Math.cos(ang))*map(flux,1,90,1.2,3.2), vy:(Math.sin(ang))*map(flux,1,90,1.2,3.2), life:120, q:Math.random()});
+    }
+    particles=particles.slice(-1200);
+  }
+
+  function draw(){
+    const {w,h}=fit(c,ctx);
+    // background with pulsating storm ring
+    ctx.clearRect(0,0,w,h);
+    const ringR=map(+s.value,1,5,90,220)*(0.9+0.1*Math.sin(t*0.06));
+    const g=ctx.createRadialGradient(w/2,h/2,ringR*0.4,w/2,h/2,ringR);
+    g.addColorStop(0,'rgba(255,120,120,0.05)');
+    g.addColorStop(1,'rgba(255,120,120,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(w/2,h/2,ringR,0,Math.PI*2); ctx.fill();
+
+    // station capsule
+    ctx.fillStyle='rgba(124,244,255,0.12)'; ctx.beginPath(); ctx.arc(w/2,h/2,70,0,Math.PI*2); ctx.fill();
+    const shPct=+sh.value;
+    ctx.strokeStyle=`rgba(124,244,255,${0.25+0.55*shPct/100})`; ctx.lineWidth=4+shPct/18;
+    ctx.beginPath(); ctx.arc(w/2,h/2,75,0,Math.PI*2); ctx.stroke();
+
+    // particles
+    for(const p of particles){
+      ctx.fillStyle = p.q>0.7 ? 'rgba(124,244,255,.9)' : 'rgba(255,120,120,.9)';
+      ctx.beginPath(); ctx.arc(p.x,p.y, p.q>0.7?2.2:2.8, 0, Math.PI*2); ctx.fill();
+      p.x += p.vx; p.y += p.vy; p.life--;
+      // scatter at shield edge
+      const d=Math.hypot(p.x-w/2,p.y-h/2);
+      if(d<78 && p.life>0){ p.vx*=-0.35; p.vy*=-0.35; }
+    }
+    particles=particles.filter(p=>p.life>0 && p.x>-40 && p.x<w+40 && p.y>-40 && p.y<h+40);
+
+    // live dosimeter bar
+    const dose=dailyDose(+s.value,shPct,+eva.value);
+    const q = clamp((dose-1)/20,0,1); // map 1..21 mSv/day
+    const bx=w-220, by=30, bw=200, bh=18;
+    ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(bx,by,bw,bh);
+    ctx.fillStyle = q<0.33?'#9CFF6E': q<0.66?'#FFD166':'#ff6b6b';
+    ctx.fillRect(bx,by,bw*q,bh);
+    ctx.fillStyle='#fff'; ctx.font='12px ui-monospace'; ctx.fillText('Dose (mSv/day)', bx, by-4);
+
+    read.textContent=`S-level: S${+s.value} · Shield: ${shPct}% · EVA: ${(+eva.value).toFixed(1)} h · Dose: ${dose.toFixed(1)} mSv/day `;
+    if(dose<5) badge(badgeEl,'ok','safe'); else if(dose<15) badge(badgeEl,'warn','elevated'); else badge(badgeEl,'bad','danger');
+
+    if(run){ if(t%2===0) emit(); t+=1; requestAnimationFrame(draw); }
+  }
+
+  [s,sh,eva].forEach(el=>el.addEventListener('input',()=>{ if(!run) draw(); }));
+  document.getElementById('pause1').onclick=()=>{run=!run; pause.textContent=run?'Pause':'Resume'; if(run) draw();};
+  draw();
+})();
+
+/* ===== SIM 2: EVA Countdown ===== */
+(function(){
+  const c=document.getElementById('evaCanvas'), ctx=c.getContext('2d');
+  const path=document.getElementById('pathLen'), spd=document.getElementById('walkSpd'), suit=document.getElementById('sHelm'), storm=document.getElementById('storm');
+  const read=document.getElementById('readout2'), badgeEl=document.getElementById('badge2'), pause=document.getElementById('pause2'), reset=document.getElementById('reset2');
+  let t=0, run=true, pos=0, start=Date.now();
+
+  function envFlux(){ return [1,3,10,30,90][+storm.value-1] }
+  function doseRate(flux, suitPct){ const base=0.4; const spe=flux*0.15; const shield=1-(suitPct/100)*0.6; return (base+spe)*shield/60; } // mSv per minute
+  function resetRun(){ pos=0; start=Date.now(); }
+
+  function draw(){
+    const {w,h}=fit(c,ctx); ctx.clearRect(0,0,w,h);
+    // corridor
+    const grad=ctx.createLinearGradient(0,0,w,0); grad.addColorStop(0,'#0d1f42'); grad.addColorStop(1,'#180a35');
+    ctx.fillStyle=grad; ctx.fillRect(0,0,w,h);
+    // shelter door
+    ctx.fillStyle='rgba(124,244,255,.15)'; ctx.fillRect(w-100,h*0.25,60,h*0.5);
+    ctx.strokeStyle='rgba(124,244,255,.6)'; ctx.strokeRect(w-100,h*0.25,60,h*0.5);
+
+    const L=+path.value, v=+spd.value; // meters
+    const eta=L/v; // seconds
+    const elapsed=(Date.now()-start)/1000; pos=clamp(elapsed*v,0,L);
+    const x=map(pos,0,L,60,w-130), y=h*0.5 + Math.sin(t*0.15)*6;
+
+    // rising storm shimmer
+    const flux=envFlux(); const wave=0.05+flux*0.001;
+    for(let i=0;i<50;i++){
+      const y0=h*0.15 + (i/50)*h*0.7;
+      ctx.beginPath();
+      for(let px=0;px<w;px+=8){
+        const yy=y0 + Math.sin(t*0.1 + px*wave + i)* (6+flux*0.03);
+        px===0?ctx.moveTo(px,yy):ctx.lineTo(px,yy);
+      }
+      const mix=ctx.createLinearGradient(0,y0,w,y0);
+      mix.addColorStop(0,`rgba(124,244,255,0.06)`);
+      mix.addColorStop(.5,`rgba(178,141,255,0.10)`);
+      mix.addColorStop(1,`rgba(255,120,120,0.08)`);
+      ctx.strokeStyle=mix; ctx.lineWidth=2; ctx.stroke();
+    }
+
+    // astronaut icon
+    ctx.fillStyle='#e9f2ff'; ctx.beginPath(); ctx.arc(x,y,10,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.beginPath(); ctx.arc(x,y,16,0,Math.PI*2); ctx.stroke();
+
+    // integrate dose
+    const suitPct=+suit.value; const rate=doseRate(flux,suitPct); // mSv/min
+    const minutes = clamp(elapsed/60,0,60);
+    const dose = rate * minutes;
+    // bars
+    const bx=30, by=30, bw=w-60, bh=12;
+    ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(bx,by,bw,bh);
+    const q=clamp(pos/L,0,1); ctx.fillStyle='#9CFF6E'; ctx.fillRect(bx,by,bw*q,bh);
+    ctx.fillStyle='#fff'; ctx.font='12px ui-monospace'; ctx.fillText('Distance to shelter', bx, by-4);
+
+    const by2=54; ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(bx,by2,bw,bh);
+    const q2=clamp(dose/25,0,1); ctx.fillStyle = q2<0.33?'#9CFF6E': q2<0.66?'#FFD166':'#ff6b6b'; ctx.fillRect(bx,by2,bw*q2,bh);
+    ctx.fillStyle='#fff'; ctx.fillText('Dose accrued', bx, by2-4);
+
+    const remain=Math.max(0,eta-elapsed).toFixed(0);
+    read.textContent=`ETA: ${Math.floor(remain/60).toString().padStart(2,'0')}:${(remain%60).toString().padStart(2,'0')} · Speed: ${v.toFixed(1)} m/s · Path: ${L} m · Pred. dose: ${(rate*(eta/60)).toFixed(1)} mSv `;
+    if(q2<0.33) badge(badgeEl,'ok','ok'); else if(q2<0.66) badge(badgeEl,'warn','caution'); else badge(badgeEl,'bad','urgent');
+
+    if(q>=1) { /* reached */ }
+    if(run){ t+=1; requestAnimationFrame(draw); }
+  }
+
+  [path,spd,suit,storm].forEach(el=>el.addEventListener('input',()=>{ if(!run) draw(); }));
+  document.getElementById('pause2').onclick=()=>{run=!run; pause.textContent=run?'Pause':'Resume'; if(run) draw();};
+  document.getElementById('reset2').onclick=()=>{resetRun();};
+  resetRun(); draw();
+})();
+
+/* ===== SIM 3: Shield Designer ===== */
+(function(){
+  const c=document.getElementById('shieldCanvas'), ctx=c.getContext('2d');
+  const h2o=document.getElementById('h2o'), pe=document.getElementById('pe'), al=document.getElementById('al'), storm=document.getElementById('stormS3');
+  const read=document.getElementById('readout3'), badgeEl=document.getElementById('badge3'), pause=document.getElementById('pause3');
+  let t=0, run=true;
+
+  const rho={h2o:1.0, pe:0.94, al:2.7}; // g/cm³ approx
+  function areal(){return +h2o.value*0.1*rho.h2o + +pe.value*0.1*rho.pe + +al.value*0.1*rho.al} // g/cm²
+  function baseFlux(){return [1,3,10,30,90][+storm.value-1]}
+  function dose(AD){ // crude attenuation: exp(-k*AD) with material benefit for H-rich layers
+    const k=0.07; // per g/cm²
+    const hFrac = ((+h2o.value*0.1*rho.h2o)+(+pe.value*0.1*rho.pe)) / Math.max(areal(),1e-6);
+    const effK = k*(0.8+0.2*hFrac);
+    const quiet=0.5, spe=baseFlux()*0.12;
+    return (quiet+spe)*Math.exp(-effK*AD);
+  }
+
+  function draw(){
+    const {w,h}=fit(c,ctx); ctx.clearRect(0,0,w,h);
+    // chamber
+    const cx=w*0.35, cy=h*0.55, R=80;
+    // layers visualization
+    const tH=+h2o.value, tP=+pe.value, tA=+al.value;
+    const stack=[{t:tH,c:'rgba(124,244,255,.35)'},{t:tP,c:'rgba(156,255,110,.30)'},{t:tA,c:'rgba(255,255,255,.30)'}];
+    let r=R;
+    stack.forEach(s=>{ if(s.t>0){ ctx.strokeStyle=s.c; ctx.lineWidth=2+ s.t*0.2; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke(); r+=s.t*0.6; } });
+
+    // proton rain
+    for(let i=0;i<60;i++){
+      const x= w*0.65 + Math.sin((t+i)*0.07+i)*200;
+      const y= map(i,0,60,-40,h+40);
+      ctx.strokeStyle='rgba(255,120,120,.6)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+6,y+16); ctx.stroke();
+      // scatter glow near chamber
+      const d=Math.hypot(x-cx,y-cy); if(d<r+20){ ctx.fillStyle='rgba(178,141,255,.12)'; ctx.beginPath(); ctx.arc(cx,cy,r+30,0,Math.PI*2); ctx.fill(); }
+    }
+
+    // astronaut icon
+    ctx.fillStyle='#e9f2ff'; ctx.beginPath(); ctx.arc(cx,cy,10,0,Math.PI*2); ctx.fill();
+
+    // gauges
+    const AD=areal(); const D=dose(AD);
+    const bx=w-240, by=30, bw=210, bh=18;
+    ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(bx,by,bw,bh);
+    ctx.fillStyle='#7cf4ff'; ctx.fillRect(bx,by, clamp(AD/40,0,1)*bw, bh);
+    ctx.fillStyle='#fff'; ctx.font='12px ui-monospace'; ctx.fillText('Areal density (g/cm²)', bx, by-4);
+
+    const by2=54; ctx.fillStyle='rgba(255,255,255,.08)'; ctx.fillRect(bx,by2,bw,bh);
+    const q=clamp((D-1)/20,0,1);
+    ctx.fillStyle = q<0.33?'#9CFF6E': q<0.66?'#FFD166':'#ff6b6b';
+    ctx.fillRect(bx,by2,bw*q,bh);
+    ctx.fillStyle='#fff'; ctx.fillText('Dose (mSv/day)', bx, by2-4);
+
+    read.textContent=`H₂O: ${tH} cm · PE: ${tP} cm · Al: ${tA} cm · Σρt: ${AD.toFixed(1)} g/cm² · Dose: ${D.toFixed(1)} mSv/day `;
+    if(D<5) badge(badgeEl,'ok','good'); else if(D<15) badge(badgeEl,'warn','elevated'); else badge(badgeEl,'bad','poor');
+
+    if(run){ t+=1; requestAnimationFrame(draw); }
+  }
+
+  [h2o,pe,al,storm].forEach(el=>el.addEventListener('input',()=>{ if(!run) draw(); }));
+  document.getElementById('pause3').onclick=()=>{run=!run; pause.textContent=run?'Pause':'Resume'; if(run) draw();};
+  draw();
+})();
+
+/* ===== SIM 4: Avionics SEU ===== */
+(function(){
+  const c=document.getElementById('seuCanvas'), ctx=c.getContext('2d');
+  const flux=document.getElementById('flux'), ad=document.getElementById('areald'), ecc=document.getElementById('ecc');
+  const read=document.getElementById('readout4'), pause=document.getElementById('pause4');
+  let t=0, run=true, rows=220, buf=[];
+
+  function seuRate(F,AD,ECC){
+    // baseline upsets per hour ~ proportional to flux; attenuate with exp(-k*AD); ECC reduces effective faults
+    const k=0.05, base=F*0.06, att=Math.exp(-k*AD);
+    let eff=base*att;
+    if(ECC==='secded') eff*=0.35; if(ECC==='tmr') eff*=0.12;
+    // small floor
+    return eff;
+  }
+
+  function synthRow(){
+    const W=c.width, N=Math.floor((c.clientWidth||800)/2);
+    const row=new Float32Array(N); const F=+flux.value, AD=+ad.value, EC=ecc.value;
+    const noise=-95 + F*0.15 - AD*0.6; // dBm visual floor
+    for(let i=0;i<N;i++){
+      const f=i/N;
+      let p=noise + 10*Math.sin(t*0.03 + f*8);
+      // carriers
+      [0.18,0.42,0.66,0.81].forEach((fc,idx)=>{ const d=Math.abs(f-fc); p+= 22*Math.exp(-d*120)*(1+0.2*Math.sin(t*0.04+idx)); });
+      // glitches (SEU bursts)
+      if(Math.random()<seuRate(F,AD,EC)*0.01){ const gBin=Math.floor(N*(0.1+0.8*Math.random())); row[gBin]=p+30; }
+      row[i]=Math.max(row[i],p + (Math.random()-0.5)*2);
+    }
+    return row;
+  }
+
+  function draw(){
+    const {w,h}=fit(c,ctx);
+    buf.unshift(synthRow()); if(buf.length>rows) buf.pop();
+
+    const N=buf[0]?.length||200; const binW=w/N; const rowH=h/rows;
+    for(let r=0;r<buf.length;r++){
+      const row=buf[r];
+      for(let i=0;i<N;i++){
+        const db=row[i]; const q=clamp((db - (-110) )/45,0,1);
+        const R=Math.floor(255*clamp(q*1.8-0.2,0,1));
+        const G=Math.floor(255*clamp(q*1.5,0,1));
+        const B=Math.floor(255*clamp(1.2-q*1.4,0,1));
+        ctx.fillStyle=`rgb(${R},${G},${B})`;
+        ctx.fillRect(i*binW, r*rowH, Math.ceil(binW)+1, Math.ceil(rowH)+1);
+      }
+    }
+    // sweep
+    ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.beginPath(); ctx.moveTo((t*2)%w,0); ctx.lineTo((t*2)%w,h); ctx.stroke();
+
+    const rate=seuRate(+flux.value,+ad.value,ecc.value);
+    let risk='low', col='ok';
+    if(rate>1) { risk='medium'; col='warn'; }
+    if(rate>3) { risk='high'; col='bad'; }
+    read.textContent=`Flux: ${+flux.value} · Shield: ${+ad.value} g/cm² · SEU: ${rate.toFixed(1)}/h · Safe mode risk: ${risk}`;
+    if(run){ t+=1; requestAnimationFrame(draw); }
+  }
+
+  [flux,ad,ecc].forEach(el=>el.addEventListener('input',()=>{ if(!run) draw(); }));
+  document.getElementById('pause4').onclick=()=>{run=!run; pause.textContent=run?'Pause':'Resume'; if(run) draw();};
+  draw();
+})();
+</script>
+</body>
+</html>
