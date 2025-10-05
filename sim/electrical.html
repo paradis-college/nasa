@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Engineer Power Grid + GIC Heat + Frequency Lab</title>
+<style>
+  :root{--bg:#0a0e1a;--card:#1a2540;--text:#e9f2ff;--accent:#7cf4ff;--border:rgba(124,244,255,.3);--ok:#9CFF6E;--warn:#FFD166;--bad:#ff6b6b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:ui-rounded,system-ui,sans-serif;background:linear-gradient(180deg,#0a0e1a,#121b33);color:var(--text);min-height:100vh;padding:20px}
+  .container{max-width:1200px;margin:0 auto}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  h1{font-size:2rem;color:var(--accent)}
+  .back{padding:10px 16px;border:2px solid var(--border);border-radius:12px;color:var(--accent);text-decoration:none;background:rgba(124,244,255,.12)}
+  .section-title{color:var(--accent);margin:18px 0 6px}
+  .subtitle{opacity:.9;margin-bottom:8px}
+
+  /* shared blocks */
+  .sim{display:grid;grid-template-columns:1fr 320px;gap:16px;margin:12px 0 26px}
+  .viz{position:relative;background:var(--card);border:2px solid var(--border);border-radius:18px;padding:18px;min-height:520px;overflow:hidden}
+  .panel{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px}
+  .label{display:block;font-weight:800;margin:8px 0 6px;color:var(--accent)}
+  input[type="range"]{width:100%;height:8px;background:rgba(124,244,255,.2);border-radius:4px}
+  input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;background:var(--accent);border-radius:50%}
+  .value{display:inline-block;padding:3px 10px;background:rgba(124,244,255,.2);border-radius:8px;font-weight:800;margin-top:6px}
+  .info{margin-top:10px;padding:12px;background:rgba(124,244,255,.1);border-radius:10px;font-size:.9rem;line-height:1.5}
+  .status-ok{color:var(--ok)} .status-warn{color:var(--warn)} .status-danger{color:var(--bad)}
+  .note{margin-top:10px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.12);border-radius:12px;padding:10px}
+  .quiz{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+  .quiz button{background:rgba(124,244,255,.12);border:1px solid var(--border);color:var(--accent);border-radius:10px;padding:6px 10px;font-weight:800;cursor:pointer}
+  .quiz .ok{color:#0f5132;background:rgba(111,230,194,.2);border-color:rgba(111,230,194,.5)}
+  .quiz .no{color:#842029;background:rgba(255,107,107,.18);border-color:rgba(255,107,107,.5)}
+
+  /* --- SIM 1: Engineer Power Grid (3 gens) --- */
+  .grid-display{width:100%;height:400px;background:#0a0e1a;border-radius:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:20px}
+  .grid-node{background:rgba(124,244,255,.2);border:2px solid rgba(124,244,255,.5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;transition:.2s}
+  .grid-node.active{background:rgba(124,244,255,.4);box-shadow:0 0 16px rgba(124,244,255,.45)}
+  .grid-node.overload{background:rgba(255,107,107,.35);border-color:var(--bad);box-shadow:0 0 28px rgba(255,107,107,.6),0 0 8px inset rgba(255,107,107,.6);animation:blink .55s infinite,glow 2s ease-in-out infinite alternate}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.55}}
+  @keyframes glow{0%{filter:drop-shadow(0 0 0 var(--bad))}100%{filter:drop-shadow(0 0 10px var(--bad))}}
+  .gens{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 12px}
+  .gen{background:rgba(124,244,255,.08);border:1px solid rgba(124,244,255,.25);border-radius:10px;padding:10px}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:800;font-size:.8rem}
+  .okP{background:rgba(156,255,110,.18);color:var(--ok)} .warnP{background:rgba(255,209,102,.18);color:var(--warn)} .badP{background:rgba(255,107,107,.18);color:var(--bad)}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .btn{background:linear-gradient(180deg,#2e8cff,#1e6bd6);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:800;cursor:pointer}
+  .alarm::before{content:"";position:absolute;inset:0;background:
+    radial-gradient(circle at 25% 30%,rgba(255,107,107,.12),transparent 42%),
+    radial-gradient(circle at 80% 70%,rgba(255,107,107,.12),transparent 45%);animation:wash 1.2s linear infinite;pointer-events:none}
+  @keyframes wash{0%{opacity:.35}50%{opacity:.12}100%{opacity:.35}}
+
+  /* --- SIM 2: GIC Corridor Heat Map --- */
+  .map{width:100%;height:400px;border-radius:12px;background:radial-gradient(circle at 50% 50%,#0d1b2a 0%,#07111f 60%,#040a16 100%);position:relative;overflow:hidden}
+  .station{position:absolute;width:18px;height:18px;border-radius:50%;background:#aee3ff;border:2px solid #64d8ff;box-shadow:0 0 10px rgba(124,244,255,.6)}
+  .link{position:absolute;height:4px;background:linear-gradient(90deg,rgba(124,244,255,.2),rgba(124,244,255,.7),rgba(124,244,255,.2));transform-origin:left;border-radius:4px;overflow:hidden}
+  .current{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.6) 50%,transparent 100%);animation:flow 1.2s linear infinite}
+  @keyframes flow{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+  .hot{box-shadow:0 0 18px rgba(255,107,107,.9)!important;background:#ffb3b3!important;border-color:#ff6b6b!important}
+  .over{background:linear-gradient(90deg,rgba(255,107,107,.3),rgba(255,107,107,.8),rgba(255,107,107,.3))!important;animation:flow 0.6s linear infinite}
+  .legend{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.3);padding:8px 10px;border-radius:10px;font-size:.85rem}
+  .status{font-weight:800;margin-top:8px}
+
+  /* --- SIM 3: Frequency Stability Lab --- */
+  .dial{width:220px;height:220px;border-radius:50%;border:8px solid rgba(124,244,255,.25);margin:6px auto;background:conic-gradient(from 270deg,#9CFF6E 0 70%,#FFD166 70% 85%,#ff6b6b 85% 100%);position:relative}
+  .dial::after{content:"";position:absolute;inset:18px;border-radius:50%;background:#0b1225}
+  .needle{position:absolute;left:50%;top:50%;width:4px;height:90px;background:#e9f2ff;transform-origin:bottom center;transform:rotate(0deg);transition:transform .15s}
+  .tick{position:absolute;left:50%;top:8px;width:2px;height:10px;background:#7cf4ff;transform-origin:bottom}
+  .freqRead{text-align:center;font-weight:900;margin-top:6px}
+  canvas#sparkPlot{width:100%;height:140px;background:#0b1429;border-radius:10px;margin-top:10px}
+
+  @media(max-width:900px){.sim{grid-template-columns:1fr}.gens{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a class="back" href="..">← Back</a>
+    <h1>
+      ~
+      /
+      <a href="..">Stellar Weather Stories</a>
+      /
+      <a href="#">⚡ Grid Control Suite</a>
+    </h1>
+  </div>
+
+  <!-- ===== SIM 1: Engineer Power Grid — 3 Generators + Quiz ===== -->
+  <h2 class="section-title">Engineer Power Grid — 3 Generators</h2>
+  <p class="subtitle">Tune gens, load, and shielding. Flashing cells indicate overload risk.</p>
+  <div class="sim">
+    <div class="viz" id="viz">
+      <h3 style="margin-bottom:8px">Power Grid Status</h3>
+
+      <div class="gens">
+        <div class="gen" id="genAcard">
+          <div><b>Gen A</b> · <span class="pill okP" id="genAstate">online</span></div>
+          <div class="value" id="genAout">Output: 35%</div>
+        </div>
+        <div class="gen" id="genBcard">
+          <div><b>Gen B</b> · <span class="pill okP" id="genBstate">online</span></div>
+          <div class="value" id="genBout">Output: 35%</div>
+        </div>
+        <div class="gen" id="genCcard">
+          <div><b>Gen C</b> · <span class="pill warnP" id="genCstate">limited</span></div>
+          <div class="value" id="genCout">Output: 20%</div>
+        </div>
+      </div>
+
+      <div class="grid-display" id="gridDisplay"></div>
+
+      <div class="info">
+        <strong>System Status:</strong>
+        <p id="statusText" class="status-danger">CRITICAL! Transformer damage imminent! Emergency protocols needed!</p>
+        <div class="btnrow">
+          <button class="btn" id="tripA">Trip Gen A</button>
+          <button class="btn" id="tripB">Trip Gen B</button>
+          <button class="btn" id="tripC">Trip Gen C</button>
+          <button class="btn" id="restore">Restore All</button>
+        </div>
+      </div>
+
+      <div class="note">
+        <p><b>Did you know?</b> N-1 security means the grid survives any single generator or line loss.</p>
+        <div class="quiz" data-quiz="q1">
+          <span class="value">Quiz:</span>
+          <button data-correct="true">More spinning reserve → safer</button>
+          <button data-correct="false">Less spinning reserve → safer</button>
+          <span class="value" data-result></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-bottom:10px;color:var(--accent)">Control Panel</h3>
+
+      <label class="label" for="geomagneticStorm">Geomagnetic Storm (G0–G5)</label>
+      <input type="range" id="geomagneticStorm" min="0" max="5" value="4" step="1"/>
+      <div class="value" id="stormValue">G4 - Severe</div>
+
+      <label class="label" for="gridLoad">System Load (% peak)</label>
+      <input type="range" id="gridLoad" min="0" max="120" value="95"/>
+      <div class="value" id="loadValue">95%</div>
+
+      <label class="label" for="transformerTemp">Transformer Temp (°C)</label>
+      <input type="range" id="transformerTemp" min="20" max="120" value="102"/>
+      <div class="value" id="tempValue">102°C</div>
+
+      <label class="label" for="shielding">Grid Shielding</label>
+      <input type="range" id="shielding" min="0" max="100" value="20"/>
+      <div class="value" id="shieldingValue">20%</div>
+
+      <hr style="opacity:.2;margin:10px 0"/>
+
+      <label class="label" for="genA">Gen A Output (%)</label>
+      <input type="range" id="genA" min="0" max="100" value="35"/>
+
+      <label class="label" for="genB">Gen B Output (%)</label>
+      <input type="range" id="genB" min="0" max="100" value="35"/>
+
+      <label class="label" for="genC">Gen C Output (%)</label>
+      <input type="range" id="genC" min="0" max="100" value="20"/>
+
+      <div class="info" style="font-size:.85rem">
+        <p><b>Tip:</b> Keep spinning reserve ≥ 10% of load. During G4–G5 raise shielding and shed load.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SIM 2: GIC Corridor Heat Map ===== -->
+  <h2 class="section-title">GIC Corridor Heat Map</h2>
+  <p class="subtitle">Storm, latitude, ground, and line direction set GIC risk and hot spots.</p>
+  <div class="sim">
+    <div class="viz" id="vizGIC">
+      <div class="map" id="map"></div>
+      <div class="legend" style="position:absolute;right:10px;top:10px;background:rgba(0,0,0,.3);padding:8px 10px;border-radius:10px;font-size:.85rem">
+        <div><b>Legend</b></div>
+        <div>Blue = normal</div>
+        <div class="status-warn">Amber = elevated</div>
+        <div class="status-danger">Red = overload</div>
+      </div>
+      <div class="note">
+        <p><b>Did you know?</b> East–west lines pick up more GIC during fast dB/dt because induced E-fields align with conductors.</p>
+        <div class="quiz" data-quiz="gicq">
+          <span class="value">Quiz:</span>
+          <button data-correct="true">Higher latitude → higher GIC risk</button>
+          <button data-correct="false">Lower latitude → higher GIC risk</button>
+          <span class="value" data-result></span>
+        </div>
+      </div>
+      <p class="status" id="gicStatus"></p>
+    </div>
+    <div class="panel">
+      <label class="label" for="storm">Storm Level (G0–G5)</label>
+      <input type="range" id="storm" min="0" max="5" value="4"/>
+      <div class="value" id="stormV">G4</div>
+
+      <label class="label" for="lat">Latitude (° geomag)</label>
+      <input type="range" id="lat" min="20" max="70" value="60"/>
+      <div class="value" id="latV">60°</div>
+
+      <label class="label" for="cond">Ground Conductivity</label>
+      <input type="range" id="cond" min="1" max="100" value="60"/>
+      <div class="value" id="condV">60%</div>
+
+      <label class="label" for="dir">Dominant Line Orientation</label>
+      <input type="range" id="dir" min="0" max="90" value="75"/>
+      <div class="value" id="dirV">E–W bias</div>
+    </div>
+  </div>
+
+  <!-- ===== SIM 3: Frequency Stability Lab ===== -->
+  <h2 class="section-title">Frequency Stability Lab</h2>
+  <p class="subtitle">Balance generation, load, inertia, and droop to hold 50/60 Hz.</p>
+  <div class="sim">
+    <div class="viz" id="vizF">
+      <div class="dial" id="dial">
+        <div class="needle" id="needle"></div>
+        <div class="tick" style="transform:translateX(-50%) rotate(300deg)"></div>
+        <div class="tick" style="transform:translateX(-50%) rotate(330deg)"></div>
+        <div class="tick" style="transform:translateX(-50%) rotate(0deg)"></div>
+        <div class="tick" style="transform:translateX(-50%) rotate(30deg)"></div>
+        <div class="tick" style="transform:translateX(-50%) rotate(60deg)"></div>
+      </div>
+      <div class="freqRead" id="freqRead">50.00 Hz</div>
+      <canvas id="sparkPlot" width="720" height="140"></canvas>
+      <div class="note">
+        <p><b>Did you know?</b> More inertia slows RoCoF after a trip, giving governors and UFLS time to act.</p>
+        <div class="quiz" data-quiz="fq">
+          <span class="value">Quiz:</span>
+          <button data-correct="true">Higher inertia → slower RoCoF</button>
+          <button data-correct="false">Higher inertia → faster RoCoF</button>
+          <span class="value" data-result></span>
+        </div>
+      </div>
+      <p class="status" id="freqStatus"></p>
+    </div>
+    <div class="panel">
+      <label class="label" for="base">Nominal Frequency</label>
+      <input type="range" id="base" min="50" max="60" value="50"/>
+      <div class="value" id="baseV">50 Hz</div>
+
+      <label class="label" for="genPct">Generation (% of load)</label>
+      <input type="range" id="genPct" min="60" max="120" value="95"/>
+      <div class="value" id="genV">95%</div>
+
+      <label class="label" for="loadPct">Load (% base)</label>
+      <input type="range" id="loadPct" min="60" max="120" value="100"/>
+      <div class="value" id="loadV">100%</div>
+
+      <label class="label" for="inertia">System Inertia</label>
+      <input type="range" id="inertia" min="1" max="10" value="3"/>
+      <div class="value" id="inertiaV">Low</div>
+
+      <label class="label" for="droop">Primary Droop (strength)</label>
+      <input type="range" id="droop" min="0" max="10" value="5"/>
+      <div class="value" id="droopV">Medium</div>
+
+      <div class="value" style="margin-top:10px">Try: Gen 80%, Inertia 2 → watch dip and UFLS.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== shared quiz handler ===== */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.quiz button'); if(!b) return;
+  const box=b.closest('.quiz'); const res=box.querySelector('[data-result]');
+  const ok=b.getAttribute('data-correct')==='true';
+  res.textContent= ok?'Correct ✅':'Try again';
+  res.className='value '+(ok?'ok':'no');
+});
+
+/* ===== SIM 1 script ===== */
+const gridDisplay=document.getElementById('gridDisplay');
+const statusText=document.getElementById('statusText');
+const viz=document.getElementById('viz');
+
+const geomagneticStorm=document.getElementById('geomagneticStorm');
+const gridLoad=document.getElementById('gridLoad');
+const transformerTemp=document.getElementById('transformerTemp');
+const shielding=document.getElementById('shielding');
+
+const stormValue=document.getElementById('stormValue');
+const loadValue=document.getElementById('loadValue');
+const tempValue=document.getElementById('tempValue');
+const shieldingValue=document.getElementById('shieldingValue');
+
+const genA=document.getElementById('genA');
+const genB=document.getElementById('genB');
+const genC=document.getElementById('genC');
+
+const genAout=document.getElementById('genAout');
+const genBout=document.getElementById('genBout');
+const genCout=document.getElementById('genCout');
+
+const genAstate=document.getElementById('genAstate');
+const genBstate=document.getElementById('genBstate');
+const genCstate=document.getElementById('genCstate');
+
+const genAcard=document.getElementById('genAcard');
+const genBcard=document.getElementById('genBcard');
+const genCcard=document.getElementById('genCcard');
+
+const tripA=document.getElementById('tripA');
+const tripB=document.getElementById('tripB');
+const tripC=document.getElementById('tripC');
+const restore=document.getElementById('restore');
+
+const stormLevels=['G0 - None','G1 - Minor','G2 - Moderate','G3 - Strong','G4 - Severe','G5 - Extreme'];
+
+for(let i=0;i<12;i++){
+  const node=document.createElement('div');
+  node.className='grid-node';
+  node.textContent='N'+(i+1);
+  node.id='node'+i;
+  gridDisplay.appendChild(node);
+}
+
+function setGenState(card,chip,cls,txt){
+  chip.textContent=txt;
+  chip.className='pill '+(cls==='bad'?'badP':cls==='warn'?'warnP':'okP');
+  card.style.boxShadow = cls==='bad' ? '0 0 20px rgba(255,107,107,.45)' : 'none';
+}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+let sweep=0;
+
+function updateSim1(){
+  const storm=+geomagneticStorm.value;
+  const load=+gridLoad.value;
+  const temp=+transformerTemp.value;
+  const sh=+shielding.value;
+
+  stormValue.textContent=stormLevels[storm];
+  loadValue.textContent=load+'%';
+  tempValue.textContent=temp+'°C';
+  shieldingValue.textContent=sh+'%';
+
+  const gA=+genA.value, gB=+genB.value, gC=+genC.value;
+  genAout.textContent=`Output: ${gA}%`; genBout.textContent=`Output: ${gB}%`; genCout.textContent=`Output: ${gC}%`;
+
+  const totalGen=gA+gB+gC;
+  const reserve = clamp(totalGen - load, -200, 200);
+  setGenState(genAcard,genAstate, gA===0?'bad':(gA<20?'warn':'ok'), gA===0?'offline':(gA<20?'limited':'online'));
+  setGenState(genBcard,genBstate, gB===0?'bad':(gB<20?'warn':'ok'), gB===0?'offline':(gB<20?'limited':'online'));
+  setGenState(genCcard,genCstate, gC===0?'bad':(gC<20?'warn':'ok'), gC===0?'offline':(gC<20?'limited':'online'));
+
+  const stormImpact=storm*20;
+  const loadImpact=Math.max(0, load-80);
+  const tempImpact=Math.max(0, temp-80);
+  const shieldReduction=sh/100;
+  const reservePenalty = reserve<0 ? Math.abs(reserve)*0.8 : Math.max(0,10-reserve)*0.5;
+  const totalRisk=(stormImpact + loadImpact + tempImpact + reservePenalty) * (1 - shieldReduction);
+
+  const nodes=[...gridDisplay.querySelectorAll('.grid-node')];
+  nodes.forEach(n=>n.classList.remove('active','overload'));
+  nodes.forEach(n=>n.classList.add('active'));
+
+  let overloadCount = totalRisk>90? 7 : totalRisk>70? 5 : totalRisk>50? 3 : 0;
+  if(overloadCount>0){
+    for(let i=0;i<overloadCount;i++){
+      const idx=(i*2 + sweep)%nodes.length;
+      nodes[idx].classList.add('overload');
+    }
+  }
+  sweep=(sweep+1)%nodes.length;
+
+  let txt='', klass='status-ok';
+  if(totalRisk<30){txt='Stable. Healthy margins.'; klass='status-ok'; viz.classList.remove('alarm');}
+  else if(totalRisk<60){txt='Moderate stress. Watch temps and reserve.'; klass='status-warn'; viz.classList.remove('alarm');}
+  else if(totalRisk<90){txt='High risk. Shed load, raise shielding, add generation.'; klass='status-danger'; viz.classList.add('alarm');}
+  else {txt='CRITICAL! Trip risk and thermal damage imminent!'; klass='status-danger'; viz.classList.add('alarm');}
+  statusText.textContent = `${txt}  | Gen: ${totalGen}% · Load: ${load}% · Reserve: ${reserve}%`;
+  statusText.className=klass;
+}
+
+[geomagneticStorm,gridLoad,transformerTemp,shielding,genA,genB,genC].forEach(el=>el.addEventListener('input',updateSim1));
+tripA.onclick=()=>{genA.value=0; updateSim1();}
+tripB.onclick=()=>{genB.value=0; updateSim1();}
+tripC.onclick=()=>{genC.value=0; updateSim1();}
+restore.onclick=()=>{genA.value=35; genB.value=35; genC.value=20; updateSim1();}
+setInterval(updateSim1,450); updateSim1();
+
+/* ===== SIM 2 script (GIC Heat Map) ===== */
+const mapEl=document.getElementById('map');
+const storm2=document.getElementById('storm');
+const lat2=document.getElementById('lat');
+const cond2=document.getElementById('cond');
+const dir2=document.getElementById('dir');
+const gicStatus=document.getElementById('gicStatus');
+const stormV=document.getElementById('stormV');
+const latV=document.getElementById('latV');
+const condV=document.getElementById('condV');
+const dirV=document.getElementById('dirV');
+
+const pts=[{x:.12,y:.25},{x:.35,y:.18},{x:.62,y:.30},{x:.85,y:.22},{x:.20,y:.68},{x:.48,y:.58},{x:.77,y:.72}];
+const stEls=[], links=[];
+function px(x,axis){return axis==='x'?Math.round(x*mapEl.clientWidth):Math.round(x*mapEl.clientHeight)}
+function buildMap(){
+  mapEl.innerHTML=''; links.length=0; stEls.length=0;
+  pts.forEach((p,i)=>{
+    const s=document.createElement('div'); s.className='station'; s.style.left=(px(p.x,'x')-9)+'px'; s.style.top=(px(p.y,'y')-9)+'px';
+    mapEl.appendChild(s); stEls[i]=s;
+  });
+  const pairs=[[0,2],[2,3],[1,2],[4,5],[5,6],[0,4],[3,6]];
+  pairs.forEach(([a,b])=>{
+    const aP=pts[a], bP=pts[b];
+    const x1=px(aP.x,'x'), y1=px(aP.y,'y'), x2=px(bP.x,'x'), y2=px(bP.y,'y');
+    const dx=x2-x1, dy=y2-y1; const len=Math.hypot(dx,dy); const ang=Math.atan2(dy,dx)*180/Math.PI;
+    const l=document.createElement('div'); l.className='link'; l.style.left=x1+'px'; l.style.top=y1+'px'; l.style.width=len+'px'; l.style.transform=`rotate(${ang}deg)`;
+    const c=document.createElement('div'); c.className='current'; l.appendChild(c);
+    mapEl.appendChild(l); links.push({el:l,ang:((ang%180)+180)%180});
+  });
+}
+buildMap(); window.addEventListener('resize',buildMap);
+
+function updateGIC(){
+  stormV.textContent='G'+storm2.value;
+  latV.textContent=lat2.value+'°';
+  condV.textContent=cond2.value+'%';
+  dirV.textContent=(dir2.value>60?'E–W bias':dir2.value<30?'N–S bias':'Mixed');
+
+  const s=+storm2.value; const phi=(+lat2.value-20)/50; const sigma=+cond2.value/100; const ewBias=+dir2.value/90;
+  let overloads=0;
+
+  links.forEach(o=>{
+    const theta=o.ang; const align = 1 - Math.abs(theta-0)/90;
+    const risk = (15*s) * (0.5+phi) * (0.6+0.7*sigma) * (0.5+0.8*align*ewBias);
+    o.el.classList.remove('over');
+    if(risk>85){o.el.classList.add('over'); overloads++;}
+    const cur=o.el.firstChild; cur.style.animationDuration = (1.2 - Math.min(0.9, risk/150))+'s';
+  });
+
+  stEls.forEach((sEl,i)=>{sEl.classList.remove('hot'); if(overloads>3 && (i%2===0)) sEl.classList.add('hot');});
+
+  gicStatus.className='status '+(overloads>=4?'status-danger':overloads>=2?'status-warn':'status-ok');
+  gicStatus.textContent = overloads>=4 ? 'Severe GIC risk. Expect half-cycle saturation and VAR loss.' :
+                         overloads>=2 ? 'Elevated GIC. Watch hot-spots and reactive reserves.' :
+                                        'Low GIC. Normal operation.';
+}
+[storm2,lat2,cond2,dir2].forEach(e=>e.addEventListener('input',updateGIC));
+setInterval(updateGIC,500); updateGIC();
+
+/* ===== SIM 3 script (Frequency Lab) ===== */
+const base=document.getElementById('base');
+const genPct=document.getElementById('genPct');
+const loadPct=document.getElementById('loadPct');
+const inertia=document.getElementById('inertia');
+const droop=document.getElementById('droop');
+
+const baseV=document.getElementById('baseV');
+const genV=document.getElementById('genV');
+const loadV=document.getElementById('loadV');
+const inertiaV=document.getElementById('inertiaV');
+const droopV=document.getElementById('droopV');
+
+const needle=document.getElementById('needle');
+const freqRead=document.getElementById('freqRead');
+const freqStatus=document.getElementById('freqStatus');
+const sparkPlot=document.getElementById('sparkPlot');
+const ctx=sparkPlot.getContext('2d');
+
+let f = 50.0, df = 0, series = Array(200).fill(50);
+function renderPlot(){
+  const w=sparkPlot.width, h=sparkPlot.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle='#7cf4ff'; ctx.lineWidth=2; ctx.beginPath();
+  series.forEach((v,i)=>{
+    const x = i/(series.length-1)*w;
+    const y = h - ((v- (base.value-1)) / 2.5) * h;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+}
+function tagStatus(freq, f0){
+  const dev = Math.abs(freq - f0);
+  if(freq < f0-0.8) return {t:'UFLS active. Load shed restoring balance.', c:'status-danger'};
+  if(dev > 0.5) return {t:'Contingency. Primary response at limit.', c:'status-danger'};
+  if(dev > 0.2) return {t:'Primary response engaged.', c:'status-warn'};
+  return {t:'Stable.', c:'status-ok'};
+}
+function step(){
+  const f0 = +base.value;
+  const Pm = +genPct.value/100;
+  const Pe = +loadPct.value/100;
+  const H  = Math.max(0.8, +inertia.value/2);
+  const R  = Math.max(0.05, (11-+droop.value)/10);
+
+  let Pe_eff = Pe;
+  if(f < f0-0.8) Pe_eff = Math.max(0, Pe - 0.10);
+
+  const gov = -(f - f0)/R;
+  const Pnet = (Pm + gov) - Pe_eff;
+
+  const dt = 0.1;
+  df += (Pnet/(2*H)) * dt - df*0.15;
+  f  += df;
+  f += (f0 - f)*0.01;
+
+  series.push(f); if(series.length>200) series.shift();
+
+  baseV.textContent = f0+' Hz';
+  genV.textContent  = Math.round(Pm*100)+'%';
+  loadV.textContent = Math.round(Pe*100)+'%';
+  inertiaV.textContent = (+inertia.value<=3?'Low':+inertia.value<=7?'Med':'High');
+  droopV.textContent = (+droop.value<=3?'Strong':+droop.value<=7?'Medium':'Weak');
+
+  freqRead.textContent = f.toFixed(2)+' Hz';
+  const angle = ((f - f0) * 60);
+  needle.style.transform = `rotate(${angle}deg)`;
+
+  const st = tagStatus(f,f0);
+  freqStatus.className = 'status '+st.c;
+  freqStatus.textContent = st.t + `  | Gen ${Math.round((Pm)*100)}% · Load ${Math.round(Pe*100)}% · Inertia ${inertiaV.textContent}`;
+
+  renderPlot();
+}
+[base,genPct,loadPct,inertia,droop].forEach(e=>e.addEventListener('input',()=>{}));
+setInterval(step,100); step();
+</script>
+</body>
+</html>
