@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aurora & Gradient Simulator</title>
+  <style>
+    :root{
+      --bg:#0a0e1a;--card:#121a30;--card2:#1a2540;--text:#e9f2ff;--muted:#b8c6e6;
+      --accent:#9CFF6E;--accent2:#78D7FF;--border:rgba(156,255,110,.3);--border2:rgba(120,215,255,.35)
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{font-family:ui-rounded,system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif;background:linear-gradient(180deg,#0a0e1a,#111a33 40%,#0d1430 100%);color:var(--text);line-height:1.45}
+    a{color:var(--accent)}
+    .container{max-width:1280px;margin:0 auto;padding:24px}
+    header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:20px}
+    h1{font-size:clamp(1.6rem,2.5vw,2.4rem);color:var(--accent)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{padding:10px 14px;border:2px solid var(--border);border-radius:12px;background:rgba(156,255,110,.10);color:var(--accent);font-weight:700;cursor:pointer;user-select:none;transition:.2s}
+    .tab[aria-selected="true"]{background:rgba(156,255,110,.2)}
+    .grid{display:grid;grid-template-columns:1fr 340px;gap:20px}
+    @media (max-width: 900px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card2);border:2px solid var(--border);border-radius:18px;padding:22px}
+    .card2{background:var(--card);border:2px solid var(--border2);border-radius:18px;padding:22px}
+    .title{font-size:1.15rem;font-weight:800;color:var(--accent);margin-bottom:12px}
+    .subtitle{font-weight:800;color:var(--accent2);margin:18px 0 10px}
+    .muted{color:var(--muted);font-size:.95rem}
+    .controls .group{margin-bottom:18px}
+    .controls label{display:block;font-weight:700;margin-bottom:8px;color:var(--accent)}
+    .value{display:inline-block;padding:4px 10px;background:rgba(156,255,110,.18);border-radius:8px;font-weight:700}
+    input[type=range]{width:100%;height:8px;background:rgba(156,255,110,.2);border-radius:4px;outline:none}
+    input[type=range]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;background:var(--accent);border-radius:50%;cursor:pointer}
+    select,button{width:100%;padding:10px 12px;border-radius:10px;border:2px solid var(--border2);background:#142044;color:var(--text);font-weight:700}
+    button{cursor:pointer}
+    /* Aurora display */
+    .auroraWrap{display:flex;flex-direction:column;gap:14px}
+    .auroraDisplay{width:100%;height:420px;border-radius:14px;background:radial-gradient(1200px 260px at 50% 120%, #0a1124 35%, #10233d 70%, #0b182f 100%);position:relative;overflow:hidden}
+    .auroraWave,.auroraWave2{position:absolute;bottom:-10px;left:0;right:0;height:180px;filter:blur(24px);opacity:.65;animation:wave 3.6s ease-in-out infinite}
+    .auroraWave2{animation-duration:5.4s;opacity:.45}
+    @keyframes wave{0%,100%{transform:translateY(0) scaleX(1)}50%{transform:translateY(-20px) scaleX(1.18)}}
+    .status{margin-top:6px;padding:12px;border-radius:12px;background:rgba(156,255,110,.12);border:1px dashed var(--border);font-size:.95rem}
+
+    /* Gradient simulator */
+    .canvasWrap{position:relative;}
+    canvas{display:block;width:100%;height:420px;border-radius:14px;background:conic-gradient(from 180deg at 50% 50%, #0d1a2b, #0f2140, #0d1a2b)}
+    .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .badge{padding:6px 10px;border-radius:999px;border:1px solid var(--border2);background:rgba(120,215,255,.12);color:#dff3ff;font-size:.85rem}
+
+    /* Theory */
+    details{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;background:rgba(255,255,255,.03)}
+    summary{cursor:pointer;font-weight:800}
+    .theory h3{margin:12px 0 6px;color:var(--accent)}
+    .theory p,.theory li{color:var(--muted)}
+    .section{margin-top:22px}
+    .footer{margin-top:26px;color:#a9b7d2;font-size:.85rem}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌌 Aurora & Gradient Simulator</h1>
+      <nav class="tabs" role="tablist">
+        <button class="tab" id="tab-aurora" role="tab" aria-selected="true" aria-controls="panel-aurora">Aurora</button>
+        <button class="tab" id="tab-gradient" role="tab" aria-selected="false" aria-controls="panel-gradient">Gradient</button>
+        <button class="tab" id="tab-theory" role="tab" aria-selected="false" aria-controls="panel-theory">Theory</button>
+      </nav>
+    </header>
+
+    <!-- AURORA PANEL -->
+    <section id="panel-aurora" role="tabpanel" aria-labelledby="tab-aurora">
+      <div class="grid section">
+        <div class="card auroraWrap">
+          <div class="title">Aurora Visualization</div>
+          <div class="auroraDisplay" id="auroraDisplay">
+            <div class="auroraWave" id="auroraWave"></div>
+            <div class="auroraWave2" id="auroraWave2"></div>
+          </div>
+          <div class="status" id="statusText">Kp 3 · Moderate activity. Best at ≥60° geomagnetic latitude.</div>
+          <div class="muted">Tip: Higher Kp and southward <em>B<sub>z</sub></em> shift aurora to lower latitudes. Faster solar wind speeds make curtains pulse faster.</div>
+        </div>
+        <aside class="card controls">
+          <div class="title">Control Panel</div>
+          <div class="group">
+            <label for="kpIndex">Kp Index (0–9)</label>
+            <input type="range" id="kpIndex" min="0" max="9" value="3" step="1" />
+            <div class="value" id="kpValue">3</div>
+          </div>
+          <div class="group">
+            <label for="intensity">Light Intensity</label>
+            <input type="range" id="intensity" min="0" max="100" value="60" />
+            <div class="value" id="intensityValue">60%</div>
+          </div>
+          <div class="group">
+            <label for="latitude">Observer Latitude</label>
+            <input type="range" id="latitude" min="-90" max="90" value="65" />
+            <div class="value" id="latitudeValue">65°N</div>
+          </div>
+          <div class="group">
+            <label for="solarWind">Solar Wind Speed (km/s)</label>
+            <input type="range" id="solarWind" min="300" max="900" value="420" />
+            <div class="value" id="solarWindValue">420 km/s</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- GRADIENT PANEL -->
+    <section id="panel-gradient" role="tabpanel" aria-labelledby="tab-gradient" hidden>
+      <div class="grid section">
+        <div class="card2">
+          <div class="title">Gradient Field Visualizer</div>
+          <div class="muted" style="margin-bottom:10px">Visualize <strong>∇f(x,y)</strong> for a selectable scalar field. Arrows point toward steepest increase.</div>
+          <div class="canvasWrap">
+            <canvas id="gradCanvas" width="900" height="540"></canvas>
+          </div>
+          <div class="legend">
+            <span class="badge">Grid: pseudo‑polar overlay</span>
+            <span class="badge">Arrow length ∝ |∇f| (clamped)</span>
+            <span class="badge">Click canvas to sample f and ∇f</span>
+          </div>
+        </div>
+        <aside class="card controls">
+          <div class="title">Field & Parameters</div>
+          <div class="group">
+            <label for="fieldType">Scalar Field f(x,y)</label>
+            <select id="fieldType">
+              <option value="gauss">Gaussian hill: A·exp(-(x²+y²)/σ²)</option>
+              <option value="saddle">Saddle: x² − y²</option>
+              <option value="dipole">Dipole: x/r³</option>
+              <option value="ring">Ring well: (√(x²+y²) − r₀)²</option>
+            </select>
+          </div>
+          <div class="group">
+            <label for="amp">A / scale</label>
+            <input type="range" id="amp" min="0" max="200" value="100" />
+            <div class="value" id="ampVal">1.00</div>
+          </div>
+          <div class="group" id="sigmaGroup">
+            <label for="sigma">σ (Gaussian width)</label>
+            <input type="range" id="sigma" min="20" max="300" value="160" />
+            <div class="value" id="sigmaVal">160</div>
+          </div>
+          <div class="group" id="r0Group" hidden>
+            <label for="r0">r₀ (ring radius)</label>
+            <input type="range" id="r0" min="30" max="300" value="140" />
+            <div class="value" id="r0Val">140</div>
+          </div>
+          <div class="group">
+            <label for="density">Vector density</label>
+            <input type="range" id="density" min="8" max="36" value="22" />
+            <div class="value" id="densityVal">22</div>
+          </div>
+          <div class="group">
+            <label for="scale">Arrow scale</label>
+            <input type="range" id="scale" min="10" max="140" value="70" />
+            <div class="value" id="scaleVal">70</div>
+          </div>
+          <button id="resetGrad">Reset view</button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- THEORY PANEL -->
+    <section id="panel-theory" role="tabpanel" aria-labelledby="tab-theory" hidden>
+      <div class="section theory">
+        <div class="card">
+          <div class="title">How auroras form</div>
+          <p class="muted">Charged particles from the solar wind are guided by Earth’s magnetic field into the polar upper atmosphere. Collisions with oxygen and nitrogen produce photons. Green (∼557.7 nm) is common from atomic oxygen; red (630.0 nm) appears during strong events; blue/purple arise from N₂⁺ bands.</p>
+          <h3>Fast predictors</h3>
+          <ul>
+            <li><b>Kp index</b> 0–9: higher shifts auroral oval equatorward.</li>
+            <li><b>IMF B<sub>z</sub></b>: negative (southward) couples better with Earth’s field.</li>
+            <li><b>Solar‑wind speed</b> and <b>density</b>: faster and denser increases energy input.</li>
+          </ul>
+        </div>
+        <div class="card2 section">
+          <div class="title">Gradient refresher</div>
+          <p class="muted">For a scalar field <em>f(x,y)</em>, the gradient <strong>∇f</strong> is the vector of partial derivatives. It points in the direction of the steepest ascent, with magnitude equal to the local rate of increase. In polar coordinates, <em>∇f = (∂f/∂r)\hat r + (1/r)(∂f/∂θ)\hat θ</em>.</p>
+          <details class="section"><summary>Why a polar overlay?</summary>
+            <p class="muted">Auroral structures often align with geomagnetic coordinates. The polar grid helps relate features to latitude and magnetic local time. The gradient panel overlays a faint polar style to make radial behavior visible.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer">Single‑page build. No external libraries. Responsive layout. Keyboard: 1=Aurora, 2=Gradient, 3=Theory.</p>
+  </div>
+
+  <script>
+    // Tab logic
+    const tabs = [
+      {btn: document.getElementById('tab-aurora'), panel: document.getElementById('panel-aurora')},
+      {btn: document.getElementById('tab-gradient'), panel: document.getElementById('panel-gradient')},
+      {btn: document.getElementById('tab-theory'), panel: document.getElementById('panel-theory')}
+    ];
+    function show(i){tabs.forEach((t,idx)=>{t.btn.setAttribute('aria-selected', idx===i); t.panel.hidden = idx!==i;});}
+    tabs.forEach((t,i)=>t.btn.addEventListener('click',()=>show(i)));
+    window.addEventListener('keydown',(e)=>{if(['1','2','3'].includes(e.key)) show(Number(e.key)-1)});
+
+    // ===== AURORA =====
+    const kpIndex = document.getElementById('kpIndex');
+    const intensity = document.getElementById('intensity');
+    const latitude = document.getElementById('latitude');
+    const solarWind = document.getElementById('solarWind');
+    const kpValue = document.getElementById('kpValue');
+    const intensityValue = document.getElementById('intensityValue');
+    const latitudeValue = document.getElementById('latitudeValue');
+    const solarWindValue = document.getElementById('solarWindValue');
+    const statusText = document.getElementById('statusText');
+    const auroraWave = document.getElementById('auroraWave');
+    const auroraWave2 = document.getElementById('auroraWave2');
+
+    function updateAurora(){
+      const kp = parseInt(kpIndex.value,10);
+      const intens = parseInt(intensity.value,10);
+      const lat = parseInt(latitude.value,10);
+      const wind = parseInt(solarWind.value,10);
+
+      kpValue.textContent = kp;
+      intensityValue.textContent = intens + '%';
+      latitudeValue.textContent = Math.abs(lat) + (lat>=0?'°N':'°S');
+      solarWindValue.textContent = wind + ' km/s';
+
+      const baseOpacity = Math.max(0.15, Math.min(0.95, intens/100));
+      const h = 110 + kp*24; // curtain height
+      const blur = Math.max(6, 36 - kp*2);
+
+      auroraWave.style.opacity = baseOpacity*0.95;
+      auroraWave.style.height = h + 'px';
+      auroraWave.style.filter = `blur(${blur}px)`;
+      auroraWave2.style.opacity = baseOpacity*0.6;
+      auroraWave2.style.height = Math.round(h*0.75) + 'px';
+      auroraWave2.style.filter = `blur(${Math.max(8, blur+6)}px)`;
+
+      const animSpeed = Math.max(1.1, 5 - (wind-300)/130);
+      auroraWave.style.animationDuration = animSpeed + 's';
+      auroraWave2.style.animationDuration = (animSpeed*1.5) + 's';
+
+      const colors = ['#9CFF6E','#7cf4ff','#B28DFF','#ff6b6b'];
+      const idx = Math.min(Math.floor(kp/3), colors.length-1);
+      auroraWave.style.background = `linear-gradient(180deg, transparent, ${colors[idx]})`;
+      auroraWave2.style.background = `linear-gradient(180deg, transparent, ${colors[Math.max(0,idx-1)]})`;
+
+      let status = `Kp ${kp} · `;
+      if(kp<=2) status += 'Quiet. Visible only near poles.';
+      else if(kp<=4) status += 'Moderate. Best ≥60°.';
+      else if(kp<=6) status += 'Active. Possible ≥50°.';
+      else status += 'Storm. Possible ≥40°.';
+
+      const absLat = Math.abs(lat);
+      if(absLat<40) status += ' Your latitude is usually too low.';
+      else if(absLat<60) status += kp>=6 ? ' Odds fair at your latitude.' : ' Needs stronger activity at your latitude.';
+      else status += ' Prime aurora zone.';
+      statusText.textContent = status;
+    }
+    [kpIndex,intensity,latitude,solarWind].forEach(el=>el.addEventListener('input',updateAurora));
+    updateAurora();
+
+    // ===== GRADIENT =====
+    const cvs = document.getElementById('gradCanvas');
+    const ctx = cvs.getContext('2d');
+    const fieldType = document.getElementById('fieldType');
+    const amp = document.getElementById('amp');
+    const ampVal = document.getElementById('ampVal');
+    const sigma = document.getElementById('sigma');
+    const sigmaVal = document.getElementById('sigmaVal');
+    const r0 = document.getElementById('r0');
+    const r0Val = document.getElementById('r0Val');
+    const r0Group = document.getElementById('r0Group');
+    const sigmaGroup = document.getElementById('sigmaGroup');
+    const density = document.getElementById('density');
+    const densityVal = document.getElementById('densityVal');
+    const scale = document.getElementById('scale');
+    const scaleVal = document.getElementById('scaleVal');
+    const resetGrad = document.getElementById('resetGrad');
+
+    let cx=0, cy=0, zoom=1; // world coords center and zoom
+
+    function worldToScreen(x,y){
+      const s= Math.min(cvs.width,cvs.height)*0.45*zoom;
+      const ox = cvs.width/2, oy = cvs.height/2;
+      return [ox + (x-cx)*s, oy - (y-cy)*s];
+    }
+    function screenToWorld(px,py){
+      const s= Math.min(cvs.width,cvs.height)*0.45*zoom;
+      const ox = cvs.width/2, oy = cvs.height/2;
+      return [cx + (px-ox)/s, cy - (py-oy)/s];
+    }
+
+    function field(x,y){
+      const A = Number(amp.value)/100; // user-facing 0..2
+      const type = fieldType.value;
+      if(type==='gauss'){
+        const s = Number(sigma.value);
+        const r2 = (x*x + y*y) * (300*300); // scale world→px-ish for width control
+        const val = A * Math.exp(-r2/(s*s));
+        // ∇f = f * (-2/σ²) * (x, y) * (300²)
+        const k = (-2/(s*s)) * (300*300) * val;
+        return {f:val, gx:k*x, gy:k*y};
+      } else if(type==='saddle'){
+        return {f:x*x - y*y, gx:2*x, gy:-2*y};
+      } else if(type==='dipole'){
+        const r2 = x*x + y*y; const r = Math.sqrt(r2) + 1e-6; // avoid 0
+        const f = x/(r*r*r); // simplified dipole-like
+        // gradient of x r^{-3}: ∇ = (1/r^3 - 3x^2/r^5, -3xy/r^5)
+        const r5 = r2*r*r*r; const r3 = r*r*r;
+        return {f, gx: (1/r3) - (3*x*x)/r5, gy: -(3*x*y)/r5};
+      } else { // ring
+        const R0 = Number(r0.value)/(Math.min(cvs.width,cvs.height)*0.45); // approx world units
+        const r = Math.sqrt(x*x + y*y);
+        const f = (r - R0)*(r - R0);
+        const k = 2*(r - R0)/(r+1e-6);
+        return {f, gx:k*x, gy:k*y};
+      }
+    }
+
+    function draw(){
+      // background
+      const g = ctx.createLinearGradient(0,0,0,cvs.height);
+      g.addColorStop(0,'#0d1529'); g.addColorStop(1,'#0a1122');
+      ctx.fillStyle = g; ctx.fillRect(0,0,cvs.width,cvs.height);
+
+      // polar overlay
+      ctx.save(); ctx.translate(cvs.width/2, cvs.height/2); ctx.scale(1,-1);
+      ctx.strokeStyle = 'rgba(120,215,255,.18)'; ctx.lineWidth = 1;
+      for(let r=60; r<Math.min(cvs.width,cvs.height)/2; r+=60){
+        ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.stroke();
+      }
+      ctx.rotate(Math.PI/12);
+      for(let a=0; a<24; a++){
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.min(cvs.width,cvs.height)/2,0); ctx.stroke();
+        ctx.rotate(Math.PI/12);
+      }
+      ctx.restore();
+
+      // vectors
+      const n = Number(density.value);
+      const scl = Number(scale.value)/100; // arrow scale
+      for(let i=0;i<n;i++){
+        for(let j=0;j<n;j++){
+          const u = (i+0.5)/n, v=(j+0.5)/n;
+          const [x,y] = screenToWorld(u*cvs.width, v*cvs.height);
+          const {gx,gy} = field(x,y);
+          let [px,py] = worldToScreen(x,y);
+          let vx = gx, vy = gy;
+          const mag = Math.hypot(vx,vy)+1e-9;
+          const m = Math.min(0.08, scl*mag);
+          vx = vx/mag * m * Math.min(cvs.width,cvs.height);
+          vy = vy/mag * m * Math.min(cvs.width,cvs.height);
+
+          // draw arrow
+          ctx.strokeStyle='rgba(156,255,110,.85)';
+          ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(px+vx,py-vy); ctx.stroke();
+          // head
+          const ang = Math.atan2(-vy, vx);
+          const ah = 6; ctx.beginPath();
+          ctx.moveTo(px+vx, py-vy);
+          ctx.lineTo(px+vx - ah*Math.cos(ang-0.35), py-vy + ah*Math.sin(ang-0.35));
+          ctx.lineTo(px+vx - ah*Math.cos(ang+0.35), py-vy + ah*Math.sin(ang+0.35));
+          ctx.closePath(); ctx.fillStyle='rgba(156,255,110,.85)'; ctx.fill();
+        }
+      }
+    }
+
+    function syncUI(){
+      ampVal.textContent = (Number(amp.value)/100).toFixed(2);
+      sigmaVal.textContent = sigma.value;
+      r0Val.textContent = r0.value;
+      densityVal.textContent = density.value;
+      scaleVal.textContent = scale.value;
+
+      const t = fieldType.value;
+      sigmaGroup.hidden = !(t==='gauss');
+      r0Group.hidden = !(t==='ring');
+
+      draw();
+    }
+
+    // interactions
+    [fieldType, amp, sigma, r0, density, scale].forEach(el=>el.addEventListener('input', syncUI));
+    cvs.addEventListener('click', (e)=>{
+      const rect = cvs.getBoundingClientRect();
+      const [x,y] = screenToWorld(e.clientX-rect.left, e.clientY-rect.top);
+      const {f,gx,gy} = field(x,y);
+      const info = `f=${f.toFixed(3)} |∇f|=${Math.hypot(gx,gy).toFixed(3)} at (x=${x.toFixed(2)}, y=${y.toFixed(2)})`;
+      alert(info);
+    });
+    cvs.addEventListener('wheel',(e)=>{e.preventDefault(); const s = Math.exp(-e.deltaY*0.001); zoom = Math.min(2.5, Math.max(0.5, zoom*s)); draw();},{passive:false});
+    resetGrad.addEventListener('click',()=>{cx=0;cy=0;zoom=1;draw();});
+
+    // initial
+    syncUI();
+
+    // handle HiDPI
+    function fitCanvas(){
+      const dpr = window.devicePixelRatio || 1;
+      const rect = cvs.getBoundingClientRect();
+      cvs.width = Math.round(rect.width * dpr);
+      cvs.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0); // scale to CSS pixels
+      draw();
+    }
+    new ResizeObserver(fitCanvas).observe(cvs);
+    fitCanvas();
+  </script>
+</body>
+</html>
