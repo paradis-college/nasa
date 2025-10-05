@@ -1,493 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SpaceWeatherSim</title>
-  <meta name="color-scheme" content="dark light" />
-  <style>
-    /* --- Kid-friendly, gamey visual style --- */
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Space Weather Events Calendar — NASA DONKI</title>
+<meta name="color-scheme" content="dark light"/>
+<style>
+  :root{
+    --bg:#071225; --bg2:#0b1730; --card:#0f1e3a; --text:#e9f2ff; --muted:#a6b8e6;
+    --pop1:#7cf4ff; --pop2:#9CFF6E; --pop3:#FFD166; --pop4:#B28DFF; --danger:#ff6b6b;
+    --radius:20px; --shadow:0 12px 40px -18px rgba(0,0,0,.6);
+  }
+  @media (prefers-color-scheme: light){
     :root{
-      --bg:#071225; --bg2:#0c1630; --card:#0f1e3a; --text:#e9f2ff; --muted:#9fb5e6;
-      --pop1:#7cf4ff; --pop2:#9CFF6E; --pop3:#FFD166; --pop4:#B28DFF; --danger:#ff6b6b;
-      --ring: 0 0 0 3px color-mix(in oklab, var(--pop1) 55%, transparent);
-      --shadow: 0 12px 40px -18px rgba(0,0,0,.6);
-      --radius: 22px;
+      --bg:#f0f6ff; --bg2:#e6f0ff; --card:#ffffff; --text:#0a1224; --muted:#5a6c90;
+      --pop1:#0077ff; --pop2:#10c085; --pop3:#ffb703; --pop4:#7b61ff; --danger:#e63b3b;
+      --shadow:0 12px 34px -18px rgba(0,0,0,.2);
     }
-    @media (prefers-color-scheme: light){
-      :root{
-        --bg:#f0f6ff; --bg2:#e6f0ff; --card:#ffffff; --text:#091224; --muted:#5c6c8f;
-        --pop1:#0077ff; --pop2:#14c38e; --pop3:#ffb703; --pop4:#7b61ff; --danger:#e63b3b;
-        --shadow: 0 10px 34px -18px rgba(0,0,0,.2);
-      }
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Inter, "SF Pro Rounded", Arial, sans-serif; color:var(--text);
-      background:
-        radial-gradient(1200px 900px at 20% -10%, color-mix(in oklab,var(--pop4) 12%, transparent), transparent),
-        radial-gradient(1000px 700px at 120% 10%, color-mix(in oklab,var(--pop1) 10%, transparent), transparent),
-        conic-gradient(from 0deg at 10% -20%, color-mix(in oklab,var(--pop3) 6%, transparent), transparent 20%),
-        linear-gradient(180deg,var(--bg),var(--bg2));
-      overflow-x:hidden;
-    }
-    /* twinkles */
-    .twinkle{position:fixed; inset:0; pointer-events:none; background:
-      radial-gradient(3px 3px at 10% 20%, #fff8, transparent 60%),
-      radial-gradient(2px 2px at 80% 30%, #fff5, transparent 60%),
-      radial-gradient(2px 2px at 30% 80%, #fff4, transparent 60%),
-      radial-gradient(1.8px 1.8px at 60% 60%, #fff6, transparent 60%);
-      animation: twinkle 6s linear infinite alternate;
-      mix-blend-mode: screen; opacity:.45
-    }
-    @keyframes twinkle{ from{ transform:translateY(0)} to{ transform:translateY(-8px)} }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:ui-rounded,system-ui,Inter,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text);
+    background: radial-gradient(1100px 800px at -10% -10%, color-mix(in oklab,var(--pop4) 10%, transparent), transparent),
+                radial-gradient(900px 700px at 120% 0%, color-mix(in oklab,var(--pop1) 10%, transparent), transparent),
+                linear-gradient(180deg,var(--bg),var(--bg2));
+  }
+  .wrap{max-width:1100px;margin:auto;padding:20px}
+  header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 16px}
+  .logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;
+        background:conic-gradient(from 200deg,var(--pop1),var(--pop2),var(--pop3),var(--pop4)); color:#001a28; font-weight:900; box-shadow:var(--shadow)}
+  h1{font-size:1.4rem;margin:0}
+  .panel{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:color-mix(in oklab,var(--card) 92%, transparent);
+         border:1px solid color-mix(in oklab,var(--muted) 25%, transparent); border-radius:var(--radius); padding:12px}
+  .kbd{font-family:ui-monospace,Menlo,Consolas,monospace; background:color-mix(in oklab,var(--card) 70%, transparent);
+       border:1px solid color-mix(in oklab,var(--muted) 25%, transparent); border-radius:12px; padding:8px 10px}
+  .btn{padding:10px 14px; border-radius:12px; border:1px solid color-mix(in oklab,var(--muted) 30%, transparent);
+       background:linear-gradient(180deg,color-mix(in oklab,var(--card) 88%, transparent),color-mix(in oklab,var(--card) 70%, transparent));
+       color:var(--text); font-weight:800; cursor:pointer}
+  .btn:hover{outline:2px solid color-mix(in oklab,var(--pop1) 40%, transparent)}
+  .sp{flex:1}
+  .cal{margin-top:14px;background:color-mix(in oklab,var(--card) 94%, transparent); border:1px solid color-mix(in oklab,var(--muted) 25%, transparent);
+       border-radius:var(--radius); padding:16px; box-shadow:var(--shadow)}
+  .cal-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  #title{font-weight:900}
+  .grid{margin-top:12px; display:grid; grid-template-columns:repeat(7,1fr); gap:10px}
+  .dow,.day{padding:10px; border-radius:16px; background:color-mix(in oklab,var(--card) 80%, transparent);
+            border:1px solid color-mix(in oklab,var(--muted) 16%, transparent)}
+  .dow{font-size:.88rem;color:var(--muted); text-align:center; font-weight:800}
+  .day{min-height:120px; position:relative; transition:all .15s ease}
+  .day:hover{border-color:color-mix(in oklab,var(--pop1) 35%, transparent)}
+  .num{font-weight:900; font-size:1.05rem; margin-bottom:6px; display:block}
+  .badge{margin-top:6px;margin-right:4px;display:inline-block;font-size:.72rem;padding:5px 8px;border-radius:8px;border:2px solid transparent;cursor:pointer;font-weight:800}
+  .b-FLR{background:color-mix(in oklab,var(--pop3) 26%, transparent); border-color:color-mix(in oklab,var(--pop3) 55%, transparent)}
+  .b-CME{background:color-mix(in oklab,var(--pop4) 26%, transparent); border-color:color-mix(in oklab,var(--pop4) 55%, transparent)}
+  .b-GST{background:color-mix(in oklab,var(--pop2) 26%, transparent); border-color:color-mix(in oklab,var(--pop2) 55%, transparent)}
+  .b-RBE{background:color-mix(in oklab,var(--danger) 22%, transparent); border-color:color-mix(in oklab,var(--danger) 50%, transparent)}
+  .b-SEP{background:color-mix(in oklab,var(--pop1) 26%, transparent); border-color:color-mix(in oklab,var(--pop1) 55%, transparent)}
+  .b-HSS{background:color-mix(in oklab,var(--muted) 26%, transparent); border-color:color-mix(in oklab,var(--muted) 55%, transparent)}
+  .b-NTF{background:color-mix(in oklab,var(--pop4) 20%, transparent); border-color:color-mix(in oklab,var(--pop4) 45%, transparent)}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;padding:10px;background:color-mix(in oklab,var(--card) 72%, transparent);border-radius:12px}
+  .leg{display:flex;gap:6px;align-items:center;font-size:.9rem}
+  .dot{width:14px;height:14px;border-radius:4px;border:2px solid}
+  .hint{color:var(--muted);font-size:.95rem;margin-top:8px}
 
-    .wrap{max-width:1100px;margin:auto;padding:22px}
-
-    /* --- NAV --- */
-    .nav{position:sticky; top:0; z-index:50; backdrop-filter:saturate(150%) blur(10px);
-      background: color-mix(in oklab, var(--bg) 75%, transparent);
-      border-bottom: 1px solid color-mix(in oklab, var(--muted) 22%, transparent)
-    }
-    .nav-inner{display:flex;align-items:center;gap:14px;min-height:74px}
-    .logo{width:44px;height:44px;border-radius:14px;background: conic-gradient(from 210deg,var(--pop1),var(--pop2),var(--pop3),var(--pop4),var(--pop1));
-      display:grid;place-items:center;color:#001b2a;font-weight:900; box-shadow: var(--shadow)}
-    .brand{font-weight:900;letter-spacing:.2px;font-size:1.15rem}
-    .spacer{flex:1}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{padding:12px 16px;border:2px solid color-mix(in oklab,var(--muted) 25%, transparent);border-radius:999px;
-      background:linear-gradient(180deg,color-mix(in oklab,var(--card) 90%, transparent),color-mix(in oklab,var(--card) 70%, transparent));
-      color:var(--text); font-weight:700; box-shadow: var(--shadow); transform:translateY(0); transition:transform .08s ease}
-    .tab:focus,.tab:hover{outline:var(--ring); transform:translateY(-1px)}
-    .tab[aria-current="page"]{border-color: color-mix(in oklab, var(--pop1) 60%, transparent)}
-
-    /* --- HEADINGS --- */
-    h1,h2,h3{margin:0 0 8px 0}
-    h2{font-size:1.6rem}
-
-    /* --- SECTIONS --- */
-    section{display:none;animation:fade .15s ease}
-    section.active{display:block}
-    @keyframes fade{from{opacity:.6;transform:translateY(2px)}to{opacity:1;transform:none}}
-
-    /* --- SIMULATOR GRID --- */
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:14px}
-    .card{position:relative;isolation:isolate;background:linear-gradient(180deg,color-mix(in oklab,var(--card) 96%, transparent),color-mix(in oklab,var(--card) 70%, transparent));
-      border:1px solid color-mix(in oklab,var(--muted) 24%, transparent);border-radius:var(--radius);overflow:hidden;min-height:160px;display:flex;flex-direction:column; box-shadow: var(--shadow)}
-    .card .art{position:absolute;inset:0;z-index:0;opacity:.18;background:
-      radial-gradient(360px 180px at 85% 5%,var(--pop1),transparent),
-      radial-gradient(280px 160px at 10% 95%,var(--pop2),transparent)}
-    .card h3{margin:18px 18px 8px 18px}
-    .card p{margin:0 18px 14px 18px;color:var(--muted);font-size:.98rem}
-    .card .actions{margin:auto 18px 18px 18px}
-    .btn{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;border:2px solid color-mix(in oklab,var(--muted) 25%, transparent);
-      background:linear-gradient(180deg,color-mix(in oklab,var(--card) 85%, transparent),color-mix(in oklab,var(--card) 60%, transparent)); cursor:pointer; font-weight:800}
-    .btn:focus,.btn:hover{outline:var(--ring); transform:translateY(-1px)}
-
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:2px dashed color-mix(in oklab,var(--muted) 40%, transparent); color:var(--muted); font-weight:700}
-
-    /* --- CALENDAR --- */
-    .cal-wrap{margin-top:14px;background:color-mix(in oklab,var(--card) 92%, transparent);border:1px solid color-mix(in oklab,var(--muted) 25%, transparent);
-      border-radius:var(--radius);padding:16px; box-shadow: var(--shadow)}
-    .cal-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-    .cal-head h3{margin:0}
-    .cal-head .sp{flex:1;min-width:20px}
-    .cal-grid{margin-top:10px;display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
-    .dow,.day{padding:10px;border-radius:16px;background:color-mix(in oklab,var(--card) 80%, transparent);border:1px solid color-mix(in oklab,var(--muted) 16%, transparent)}
-    .dow{font-size:.88rem;color:var(--muted);text-align:center;font-weight:800}
-    .day{min-height:120px;position:relative;transition:all .2s ease}
-    .day:hover{border-color:color-mix(in oklab,var(--pop1) 40%, transparent);box-shadow:0 4px 12px rgba(0,0,0,.15)}
-    .day .num{font-weight:900;font-size:1.1rem;margin-bottom:6px;display:block}
-    .badge{margin-top:6px;margin-right:4px;display:inline-block;font-size:.72rem;padding:5px 8px;border-radius:8px;border:2px solid transparent;cursor:pointer;font-weight:800;transition:transform .15s ease}
-    .badge:hover{outline:var(--ring);transform:scale(1.05)}
-    .b-FLR{background:color-mix(in oklab,var(--pop3) 28%, transparent); border-color: color-mix(in oklab,var(--pop3) 55%, transparent)}
-    .b-CME{background:color-mix(in oklab,var(--pop4) 28%, transparent); border-color: color-mix(in oklab,var(--pop4) 55%, transparent)}
-    .b-GST{background:color-mix(in oklab,var(--pop2) 28%, transparent); border-color: color-mix(in oklab,var(--pop2) 55%, transparent)}
-    .b-RBE{background:color-mix(in oklab,var(--danger) 24%, transparent); border-color: color-mix(in oklab,var(--danger) 50%, transparent)}
-    .b-SEP{background:color-mix(in oklab,var(--pop1) 28%, transparent); border-color: color-mix(in oklab,var(--pop1) 55%, transparent)}
-    .b-HSS{background:color-mix(in oklab,var(--muted) 28%, transparent); border-color: color-mix(in oklab,var(--muted) 55%, transparent)}
-    .b-WSA{background:color-mix(in oklab,var(--pop1) 22%, transparent); border-color: color-mix(in oklab,var(--pop1) 45%, transparent)}
-    .b-NTF{background:color-mix(in oklab,var(--pop4) 22%, transparent); border-color: color-mix(in oklab,var(--pop4) 45%, transparent)}
-    .no-events{color:var(--muted);font-size:.95rem}
-    .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;padding:12px;background:color-mix(in oklab,var(--card) 70%, transparent);border-radius:12px}
-    .legend-item{display:flex;align-items:center;gap:6px;font-size:.85rem}
-    .legend-icon{width:16px;height:16px;border-radius:4px;border:2px solid}
-
-    /* --- MODAL --- */
-    dialog{border:none;border-radius:20px;max-width:760px;width:95%;background:var(--card);color:var(--text);padding:0;box-shadow:0 40px 100px -30px rgba(0,0,0,.6)}
-    .modal-head{display:flex;align-items:center;gap:12px;padding:18px;border-bottom:1px solid color-mix(in oklab,var(--muted) 20%, transparent)}
-    .modal-body{padding:18px}
-    .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:18px;padding-top:0}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:color-mix(in oklab,var(--card) 60%, transparent);padding:6px 8px;border-radius:10px;border:1px solid color-mix(in oklab,var(--muted) 25%, transparent)}
-
-    /* --- ABOUT --- */
-    .about{display:grid;gap:12px}
-
-    /* fun emoji bullets */
-    .emoji{font-size:1.1rem}
-  </style>
+  dialog{border:none;border-radius:20px;max-width:800px;width:95%;background:var(--card);color:var(--text);padding:0;box-shadow:0 40px 100px -30px rgba(0,0,0,.6)}
+  .m-head{display:flex;gap:10px;align-items:center;padding:16px;border-bottom:1px solid color-mix(in oklab,var(--muted) 20%, transparent)}
+  .m-body{padding:16px}
+  .m-foot{display:flex;gap:10px;justify-content:flex-end;padding:16px;padding-top:0}
+  pre.kbd{white-space:pre-wrap;max-height:60vh;overflow:auto}
+</style>
 </head>
 <body>
-  <div class="twinkle" aria-hidden="true"></div>
-
-  <nav class="nav">
-    <div class="wrap nav-inner">
+  <div class="wrap">
+    <header>
+      <a class="back" href="..">← Back</a>
       <div class="logo" aria-hidden="true">☼</div>
-      <div class="brand">SpaceWeatherSim</div>
-      <div class="spacer"></div>
-      <div class="tabs" role="tablist">
-        <a class="tab" id="tab-home" href="index.html" role="tab">Home</a>
-        <a class="tab" id="tab-sim" href="#simulators" role="tab">Simulators</a>
-        <a class="tab" id="tab-about" href="book.html" role="tab">About us</a>
-        <a class="tab" id="tab-cal" href="#calendar" role="tab">Calendar</a>
-      </div>
+    <h1>
+      <!-- <a href = "https://dbxdrgsl.github.io">~</a> -->
+      <a>~</a>
+      / 
+      <a href=".." > Space Weather Stories</a>
+      /
+      <a href="#">Space Weather Events Calendar</a>
+    </h1>
+  </div>
+    </header>
+
+    <div class="panel">
+      <button class="btn" id="prev">◀</button>
+      <div id="title">Month YYYY</div>
+      <button class="btn" id="next">▶</button>
+      <div class="sp"></div>
+      <label>Year
+        <select id="year" class="kbd" style="min-width:90px"></select>
+      </label>
+      <label>API key
+        <input id="key" class="kbd" placeholder="api.nasa.gov key" style="min-width:180px"/>
+      </label>
+      <button class="btn" id="today">Today</button>
+      <button class="btn" id="reload">Reload</button>
     </div>
-  </nav>
 
-  <main class="wrap">
-    <!-- SIMULATORS -->
-    <section id="simulators" aria-labelledby="tab-sim">
-      <h2>Simulators</h2>
-      <p class="pill">Pick a tile to start your mission</p>
-      <div class="grid" id="sim-grid"></div>
-    </section>
-
-    <!-- CALENDAR (BETA) -->
-    <section id="calendar" aria-labelledby="tab-cal">
-      <div style="display:flex;align-items:center;gap:10px">
-        <h2 style="margin:0">Space Weather Events Calendar</h2>
-        <span class="pill" title="Work in progress">Beta</span>
+    <section class="cal">
+      <div class="cal-head">
+        <div class="hint">Data source: NASA DONKI (Database Of Notifications, Knowledge, Information)</div>
       </div>
-      <p class="no-events">Source: NASA DONKI (api.nasa.gov). View space weather events and where they can be observed on Earth.</p>
-
-      <div class="cal-wrap">
-        <div class="cal-head">
-          <button class="btn" id="prevMonth" aria-label="Previous month">◀</button>
-          <h3 id="calTitle">Month YYYY</h3>
-          <div class="sp"></div>
-          <label style="display:flex;align-items:center;gap:8px">Year
-            <select id="yearSelect" class="kbd" style="min-width:100px"></select>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px">API key
-            <input id="nasaKey" class="kbd" style="min-width:180px"/>
-          </label>
-          <button class="btn" id="reload">Reload</button>
-          <button class="btn" id="nextMonth" aria-label="Next month">▶</button>
-        </div>
-        <div class="cal-grid" id="calGrid"></div>
-        
-        <!-- Event Legend -->
-        <div class="legend">
-          <div style="font-weight:800;width:100%;margin-bottom:4px;color:var(--pop1)">📊 Event Types:</div>
-          <div class="legend-item">
-            <div class="legend-icon b-FLR"></div>
-            <span><strong>FLR</strong> - Solar Flare (affects radio)</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon b-CME"></div>
-            <span><strong>CME</strong> - Coronal Mass Ejection</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon b-GST"></div>
-            <span><strong>GST</strong> - Geomagnetic Storm (affects power grids)</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon b-RBE"></div>
-            <span><strong>RBE</strong> - Radio Blackout</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon b-SEP"></div>
-            <span><strong>SEP</strong> - Solar Energetic Particles (radiation)</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-icon b-HSS"></div>
-            <span><strong>HSS</strong> - High Speed Solar Wind Stream</span>
-          </div>
-        </div>
-        
-        <!-- Quick Guide -->
-        <div style="margin-top:16px;padding:12px;background:color-mix(in oklab,var(--pop1) 8%, transparent);border-radius:12px;border-left:4px solid var(--pop1)">
-          <p style="font-size:.9rem;line-height:1.6;margin:0"><strong>💡 How to use:</strong> Click any event badge to see detailed information, including affected regions and impact predictions. Events are pulled from NASA's DONKI (Database Of Notifications, Knowledge, Information) system.</p>
-        </div>
+      <div class="grid" id="grid"></div>
+      <div class="legend">
+        <div style="font-weight:900;width:100%;color:var(--pop1)">Event Types</div>
+        <div class="leg"><span class="dot b-FLR"></span> FLR — Solar Flare</div>
+        <div class="leg"><span class="dot b-CME"></span> CME — Coronal Mass Ejection</div>
+        <div class="leg"><span class="dot b-GST"></span> GST — Geomagnetic Storm</div>
+        <div class="leg"><span class="dot b-RBE"></span> RBE — Radio Blackout</div>
+        <div class="leg"><span class="dot b-SEP"></span> SEP — Solar Energetic Particles</div>
+        <div class="leg"><span class="dot b-HSS"></span> HSS — High Speed Stream</div>
+        <div class="leg"><span class="dot b-NTF"></span> NTF — Notification</div>
       </div>
+      <p class="hint">Click a badge to view full details. Calendar refreshes itself periodically.</p>
     </section>
-  </main>
+  </div>
 
-  <!-- MODAL -->
   <dialog id="modal">
-    <div class="modal-head">
-      <h3 id="modalTitle" style="margin:0">Event</h3>
-      <div class="spacer"></div>
-      <button class="btn" id="closeModal">Close</button>
+    <div class="m-head">
+      <strong id="mTitle">Event</strong>
+      <div class="sp"></div>
+      <button class="btn" id="mClose">Close</button>
     </div>
-    <div class="modal-body" id="modalBody"></div>
-    <div class="modal-foot">
-      <button class="btn" id="copyJSON">Copy JSON</button>
+    <div class="m-body" id="mBody"></div>
+    <div class="m-foot">
+      <button class="btn" id="copy">Copy JSON</button>
     </div>
   </dialog>
 
-  <script>
-    // --- Simple router ---
-    const sections = Array.from(document.querySelectorAll('main section'));
-    const tabs = {
-      simulators: document.getElementById('tab-sim'),
-      calendar: document.getElementById('tab-cal')
-    };
-    function route(){
-      const hash = location.hash.replace('#','') || 'simulators';
-      sections.forEach(s=>s.classList.toggle('active', s.id===hash));
-      Object.entries(tabs).forEach(([k,el])=>{
-        el.setAttribute('aria-current', (k===hash? 'page': 'false'));
+<script>
+/* ---------- Controls & State ---------- */
+const grid = document.getElementById('grid');
+const titleEl = document.getElementById('title');
+const yearSel = document.getElementById('year');
+const keyInput = document.getElementById('key');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+const reloadBtn = document.getElementById('reload');
+const todayBtn = document.getElementById('today');
+
+const modal = document.getElementById('modal');
+const mTitle = document.getElementById('mTitle');
+const mBody = document.getElementById('mBody');
+document.getElementById('mClose').onclick = ()=>modal.close();
+document.getElementById('copy').onclick = ()=>{
+  const pre = mBody.querySelector('pre');
+  if(pre) navigator.clipboard.writeText(pre.innerText);
+};
+
+const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+let current = new Date(); current.setDate(1);
+
+const DEFAULT_KEY = 'o9FIZEgU2itrew0k9Y2qA9RhmeL49feU2B7fGZRR';
+keyInput.value = localStorage.getItem('donki_key') || DEFAULT_KEY;
+keyInput.addEventListener('change', ()=>localStorage.setItem('donki_key', keyInput.value.trim()));
+
+const thisMonthKey = ()=> new Date().toISOString().slice(0,7);
+
+/* ---------- Year selector ---------- */
+(function fillYears(){
+  const now = new Date().getFullYear();
+  for(let y=now-5; y<=now+1; y++){
+    const opt=document.createElement('option'); opt.value=y; opt.textContent=y;
+    if(y===now) opt.selected = true;
+    yearSel.appendChild(opt);
+  }
+})();
+yearSel.addEventListener('change', ()=>{ current.setFullYear(+yearSel.value); renderCalendar(); });
+
+/* ---------- Navigation ---------- */
+prevBtn.onclick = ()=>{ current.setMonth(current.getMonth()-1); syncYear(); renderCalendar(); };
+nextBtn.onclick = ()=>{ current.setMonth(current.getMonth()+1); syncYear(); renderCalendar(); };
+reloadBtn.onclick = ()=> renderCalendar(true);
+todayBtn.onclick = ()=>{ const t=new Date(); current = new Date(t.getFullYear(), t.getMonth(), 1); syncYear(); renderCalendar(); };
+
+function syncYear(){ yearSel.value = String(current.getFullYear()); }
+
+/* ---------- DONKI fetch ---------- */
+async function fetchDONKI(start, end, key){
+  const s = start.toISOString().slice(0,10);
+  const e = end.toISOString().slice(0,10);
+  const params = (u)=> u + (u.includes('?')?'&':'?') + new URLSearchParams({startDate:s,endDate:e,api_key:key}).toString();
+  const urls = [
+    'https://api.nasa.gov/DONKI/FLR',
+    'https://api.nasa.gov/DONKI/CME',
+    'https://api.nasa.gov/DONKI/WSAEnlilSimulations',
+    'https://api.nasa.gov/DONKI/HSS',
+    'https://api.nasa.gov/DONKI/GST',
+    'https://api.nasa.gov/DONKI/RBE',
+    'https://api.nasa.gov/DONKI/SEP',
+    'https://api.nasa.gov/DONKI/notifications'
+  ].map(params);
+
+  const results = await Promise.allSettled(urls.map(u=>fetch(u).then(r=>r.ok?r.json():[])));
+  const items = [];
+  for(const r of results){ if(r.status==='fulfilled' && Array.isArray(r.value)) items.push(...r.value); }
+  return items;
+}
+
+/* ---------- Helpers ---------- */
+function groupByDate(items){
+  const m = new Map();
+  for(const it of items){
+    const raw = it.eventDate || it.startTime || it.peakTime || it.beginTime || it.timeTag || it.startDate || it.publicationDate || it.messageIssueTime || it.activityID || '';
+    const iso = String(raw).slice(0,10);
+    if(!iso) continue;
+    if(!m.has(iso)) m.set(iso, []);
+    m.get(iso).push(it);
+  }
+  return m;
+}
+function typeOf(e){
+  if(e.classType || e.flrID) return 'FLR';
+  if(e.cmeAnalyses || e.cmeID) return 'CME';
+  if(e.kpIndex || e.gstID) return 'GST';
+  if(e.hssID) return 'HSS';
+  if(e.radioID || e.rbeID) return 'RBE';
+  if(e.sepID) return 'SEP';
+  if(e.modelCompletionTime || e.modelInput || e.model) return 'WSA';
+  if(e.messageType) return 'NTF';
+  return 'NTF';
+}
+function labelOf(e){
+  if(e.classType) return `FLR ${e.classType}`;
+  if(e.kpIndex) return `Kp ${e.kpIndex}`;
+  if(e.cmeAnalyses) return 'CME';
+  if(e.hssID) return 'HSS';
+  if(e.sepID) return 'SEP';
+  if(e.messageType) return e.messageType.replace('Report','').trim();
+  return 'Event';
+}
+function openEvent(e){
+  if(e.__multi){
+    mTitle.textContent = `${e.items.length} events`;
+    mBody.innerHTML = `<pre class="kbd">${JSON.stringify(e.items,null,2)}</pre>`;
+  }else{
+    mTitle.textContent = labelOf(e);
+    const kv = Object.entries(e).filter(([k])=>!k.startsWith('__'));
+    mBody.innerHTML = `<div style="display:grid;gap:8px">${kv.map(([k,v])=>`
+      <div><strong>${k}</strong>
+        <div class="kbd" style="overflow:auto">${typeof v==='object'? `<pre style="margin:0">${JSON.stringify(v,null,2)}</pre>` : String(v)}</div>
+      </div>`).join('')}
+    </div>`;
+  }
+  modal.showModal();
+}
+
+/* ---------- Calendar Render ---------- */
+async function renderCalendar(force=false){
+  const mo = current.toLocaleString(undefined,{month:'long'});
+  titleEl.textContent = `${mo} ${current.getFullYear()}`;
+
+  // header row
+  grid.innerHTML = DOW.map(d=>`<div class="dow">${d}</div>`).join('');
+
+  const firstDayIndex = (current.getDay()+6)%7; // Monday=0
+  const daysInMonth = new Date(current.getFullYear(), current.getMonth()+1, 0).getDate();
+
+  // leading blanks
+  for(let i=0;i<firstDayIndex;i++) grid.insertAdjacentHTML('beforeend', `<div class="day" aria-hidden="true"></div>`);
+
+  // fetch range (month + buffer week)
+  const start = new Date(current.getFullYear(), current.getMonth(), 1);
+  const end   = new Date(current.getFullYear(), current.getMonth()+1, 7);
+  const key   = keyInput.value.trim() || DEFAULT_KEY;
+
+  // cache key per month to reduce flicker when auto-refreshing
+  const cacheKey = `donki_${start.toISOString().slice(0,7)}`;
+  let items = [];
+  if(!force){
+    try{ items = JSON.parse(sessionStorage.getItem(cacheKey) || '[]'); }catch{}
+  }
+  if(force || items.length===0){
+    items = await fetchDONKI(start,end,key);
+    try{ sessionStorage.setItem(cacheKey, JSON.stringify(items)); }catch{}
+  }
+
+  const byDate = groupByDate(items);
+
+  for(let d=1; d<=daysInMonth; d++){
+    const date = new Date(current.getFullYear(), current.getMonth(), d);
+    const iso = date.toISOString().slice(0,10);
+    const evs = byDate.get(iso) || [];
+
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    cell.innerHTML = `<span class="num">${d}</span>`;
+
+    if(evs.length){
+      evs.slice(0,3).forEach(e=>{
+        const b = document.createElement('button');
+        b.className = `badge b-${typeOf(e)}`;
+        b.textContent = labelOf(e);
+        b.title = 'Open details';
+        b.onclick = ()=> openEvent(e);
+        cell.appendChild(b);
       });
-    }
-    window.addEventListener('hashchange', route);
-    route();
-
-    // --- Simulators grid (kid-friendly labels + emojis) ---
-    const sims = [
-      {key:'solar-flare-simulator.html', title:'Solar flares ☀️', desc:'See how flares get their class.'},
-      {key:'engineer-simulator.html', title:'Power grid 🔌', desc:'Keep the lights on during storms.'},
-      {key:'aurora-simulator.html', title:'Aurora catchers 🌈', desc:'Plan a glow-hunt by Kp index.'},
-      {key:'farmer-simulator.html', title:'Farmer stories 🚜', desc:'Smart choices for healthy crops.'},
-      {key:'astronaut-simulator.html', title:'Astronaut 🧑\u200d🚀', desc:'Find the safe room in time.'},
-      {key:'radio-simulator.html', title:'Radio 📻', desc:'Reroute when HF goes quiet.'},
-    ];
-    const simGrid = document.getElementById('sim-grid');
-    simGrid.innerHTML = sims.map(s=>`
-      <article class="card">
-        <div class="art" aria-hidden="true"></div>
-        <h3>${s.title}</h3>
-        <p>${s.desc}</p>
-        <div class="actions"><a class="btn" href="${s.key}">Play</a></div>
-      </article>
-    `).join('');
-
-    // --- Calendar ---
-    const calGrid = document.getElementById('calGrid');
-    const calTitle = document.getElementById('calTitle');
-    const nasaKeyInput = document.getElementById('nasaKey');
-    const yearSelect = document.getElementById('yearSelect');
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-
-    // Default API key requested by user
-    const DEFAULT_KEY = 'o9FIZEgU2itrew0k9Y2qA9RhmeL49feU2B7fGZRR';
-    nasaKeyInput.value = DEFAULT_KEY;
-
-    // Populate year selector
-    const currentYear = new Date().getFullYear();
-    for (let year = currentYear - 5; year <= currentYear + 1; year++) {
-      const option = document.createElement('option');
-      option.value = year;
-      option.textContent = year;
-      if (year === currentYear) option.selected = true;
-      yearSelect.appendChild(option);
-    }
-
-    let current = new Date();
-    current.setDate(1);
-
-    yearSelect.addEventListener('change', () => {
-      current.setFullYear(parseInt(yearSelect.value));
-      renderCalendar();
-    });
-
-    document.getElementById('prevMonth').onclick = ()=>{ current.setMonth(current.getMonth()-1); renderCalendar(); };
-    document.getElementById('nextMonth').onclick = ()=>{ current.setMonth(current.getMonth()+1); renderCalendar(); };
-    document.getElementById('reload').onclick = ()=> renderCalendar();
-    document.getElementById('closeModal').onclick = ()=> modal.close();
-    document.getElementById('copyJSON').onclick = ()=>{
-      const pre = modalBody.querySelector('pre');
-      if(pre){ navigator.clipboard.writeText(pre.innerText); }
-    };
-
-    const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-
-    async function renderCalendar(){
-      // header
-      const mo = current.toLocaleString(undefined,{month:'long'});
-      calTitle.textContent = `${mo} ${current.getFullYear()}`;
-
-      // grid header
-      calGrid.innerHTML = DOW.map(d=>`<div class=\"dow\">${d}</div>`).join('');
-
-      const firstDayIndex = (current.getDay()+6)%7; // Monday=0
-      const daysInMonth = new Date(current.getFullYear(), current.getMonth()+1, 0).getDate();
-
-      // placeholders for leading blanks
-      for(let i=0;i<firstDayIndex;i++) calGrid.insertAdjacentHTML('beforeend', `<div class=\"day\" aria-hidden=\"true\"></div>`);
-
-      // fetch NASA DONKI events for visible month + padding
-      const start = new Date(current.getFullYear(), current.getMonth(), 1);
-      const end   = new Date(current.getFullYear(), current.getMonth()+1, 7);
-      const key = nasaKeyInput.value.trim() || DEFAULT_KEY;
-
-      const all = await fetchDONKI(start,end,key);
-      const byDate = groupByDate(all);
-
-      for(let d=1; d<=daysInMonth; d++){
-        const date = new Date(current.getFullYear(), current.getMonth(), d);
-        const iso = date.toISOString().slice(0,10);
-        const evs = byDate.get(iso) || [];
-        const cell = document.createElement('div');
-        cell.className='day';
-        cell.innerHTML = `<div class=\"num\">${d}</div>`;
-        if(evs.length){
-          evs.slice(0,3).forEach(e=>{
-            const type = getType(e);
-            const b = document.createElement('button');
-            b.className='badge b-' + type;
-            b.textContent = labelFor(e);
-            b.title = 'Open details';
-            b.onclick = ()=> openEvent(e);
-            cell.appendChild(b);
-          });
-          if(evs.length>3){
-            const more = document.createElement('span');
-            more.className='badge b-NTF';
-            more.textContent = `+${evs.length-3} more`;
-            more.onclick = ()=> openEvent({__multi:true, items:evs});
-            cell.appendChild(more);
-          }
-        }
-        calGrid.appendChild(cell);
-      }
-
-      if(all.length===0){
-        const hint = document.createElement('p');
-        hint.className='no-events';
-        hint.textContent = 'No NASA DONKI items in range. Try other months or check your API key.';
-        calGrid.parentElement.appendChild(hint);
-        setTimeout(()=>hint.remove(), 5000);
+      if(evs.length>3){
+        const more = document.createElement('button');
+        more.className='badge b-NTF';
+        more.textContent = `+${evs.length-3} more`;
+        more.onclick = ()=> openEvent({__multi:true, items:evs});
+        cell.appendChild(more);
       }
     }
+    grid.appendChild(cell);
+  }
+}
 
-    function groupByDate(items){
-      const m = new Map();
-      for(const it of items){
-        const date = (it.eventDate || it.startTime || it.peakTime || it.beginTime || it.timeTag || it.startDate || it.publicationDate || it.messageIssueTime || it.activityID || '').toString();
-        const iso = (date.length>=10? date.slice(0,10) : (it.date || it.startTime || '').slice(0,10));
-        if(!iso) continue;
-        if(!m.has(iso)) m.set(iso,[]);
-        m.get(iso).push(it);
-      }
-      return m;
-    }
+/* ---------- Auto refresh ---------- */
+// Refresh every 5 minutes for the current month; less spam for others
+setInterval(()=>{
+  const nowKey = thisMonthKey();
+  const viewKey = new Date(current).toISOString().slice(0,7);
+  if(nowKey===viewKey) renderCalendar(true);
+}, 5*60*1000);
 
-    function getType(e){
-      if(e.classType || e.flrID) return 'FLR';
-      if(e.cmeAnalyses || e.cmeID) return 'CME';
-      if(e.kpIndex || e.gstID) return 'GST';
-      if(e.hssID) return 'HSS';
-      if(e.radioID || e.rbeID || e.impact) return 'RBE';
-      if(e.sepID) return 'SEP';
-      if(e.modelCompletionTime || e.modelInput || e.model) return 'WSA';
-      if(e.messageType) return 'NTF';
-      return 'NTF';
-    }
-
-    function labelFor(e){
-      if(e.classType) return `FLR ${e.classType}`; // e.g., M3.2
-      if(e.kpIndex) return `Kp ${e.kpIndex}`;
-      if(e.cmeAnalyses) return 'CME';
-      if(e.hssID) return 'HSS';
-      if(e.sepID) return 'SEP';
-      if(e.messageType) return e.messageType.replace('Report','').trim();
-      return 'Event';
-    }
-
-    function openEvent(e){
-      if(e.__multi){
-        modalTitle.textContent = `${e.items.length} events`;
-        modalBody.innerHTML = `<pre class=\"kbd\" style=\"white-space:pre-wrap;max-height:60vh;overflow:auto\">${JSON.stringify(e.items,null,2)}</pre>`;
-      }else{
-        const title = labelFor(e);
-        modalTitle.textContent = title;
-        
-        // Add observation locations based on event type
-        let locationsHTML = '';
-        const type = getType(e);
-        
-        // Add NOAA imagery links
-        let noaaHTML = '<div style="margin:10px 0;padding:12px;background:rgba(124,244,255,0.08);border-radius:10px;border-left:3px solid var(--pop1)">';
-        noaaHTML += '<strong>📸 Real-Time NOAA Space Weather Imagery:</strong><ul style="margin-top:8px;line-height:1.8">';
-        
-        if (type === 'FLR' || type === 'CME') {
-          locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(124,244,255,0.1);border-radius:10px">
-            <strong>🌍 Global Impact:</strong>
-            <p>This event affects the entire sunlit side of Earth. Radio communications may be disrupted worldwide.</p>
-          </div>`;
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/goes-x-ray-flux" target="_blank" style="color:var(--pop1)">GOES X-Ray Flux</a> - See solar flare intensity</li>';
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/solar-and-geophysical-activity-summary" target="_blank" style="color:var(--pop1)">Solar Activity Summary</a> - Daily event reports</li>';
-          noaaHTML += '<li><a href="https://sdo.gsfc.nasa.gov/data/" target="_blank" style="color:var(--pop1)">NASA SDO Imagery</a> - Solar Dynamics Observatory images</li>';
-        } else if (type === 'GST' || e.kpIndex) {
-          const kp = e.kpIndex || 5;
-          let regions = '';
-          if (kp >= 7) {
-            regions = 'Visible at latitudes: 60°N and below, including Northern USA, Canada, Scandinavia, Russia, and southern hemisphere equivalents.';
-          } else if (kp >= 5) {
-            regions = 'Visible at latitudes: 65°N+, including Northern Canada, Alaska, Iceland, Northern Scandinavia, Northern Russia.';
-          } else {
-            regions = 'Visible primarily near polar regions: 70°N+, including Arctic Circle areas.';
-          }
-          locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(156,255,110,0.1);border-radius:10px">
-            <strong>🌈 Aurora Observation Zones:</strong>
-            <p>${regions}</p>
-            <p style="margin-top:8px"><em>Best viewing: Dark, clear skies away from city lights.</em></p>
-          </div>`;
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/aurora-30-minute-forecast" target="_blank" style="color:var(--pop2)">Aurora 30-Min Forecast</a> - Current aurora oval</li>';
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/planetary-k-index" target="_blank" style="color:var(--pop2)">Planetary Kp Index</a> - Geomagnetic activity level</li>';
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/station-k-and-indices" target="_blank" style="color:var(--pop2)">Magnetometer Data</a> - Ground-based measurements</li>';
-        } else if (type === 'RBE') {
-          locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(255,107,107,0.1);border-radius:10px">
-            <strong>📡 Affected Regions:</strong>
-            <p>Radio blackouts primarily affect high-frequency communications on the sunlit side of Earth. Aviation and maritime communications may be disrupted.</p>
-          </div>`;
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/d-region-absorption-predictions" target="_blank" style="color:var(--danger)">D-RAP Predictions</a> - Radio absorption forecast</li>';
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/goes-x-ray-flux" target="_blank" style="color:var(--danger)">X-Ray Flux Monitor</a> - Flare intensity tracking</li>';
-        } else if (type === 'SEP') {
-          locationsHTML = `<div style="margin:10px 0;padding:12px;background:rgba(178,141,255,0.1);border-radius:10px">
-            <strong>☢️ Radiation Hazard:</strong>
-            <p>Solar energetic particles pose radiation risks to astronauts, high-altitude aircraft, and satellites.</p>
-          </div>`;
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/solar-radiation-activity" target="_blank" style="color:var(--pop4)">Solar Radiation Activity</a> - Current particle flux</li>';
-          noaaHTML += '<li><a href="https://www.swpc.noaa.gov/products/alerts-watches-and-warnings" target="_blank" style="color:var(--pop4)">Radiation Warnings</a> - Active alerts</li>';
-        }
-        
-        noaaHTML += '</ul></div>';
-        
-        const kv = Object.entries(e).filter(([k])=>!k.startsWith('__'));
-        modalBody.innerHTML = locationsHTML + noaaHTML + `<div style="display:grid;gap:8px;margin-top:10px">${kv.map(([k,v])=>`<div><strong>${k}</strong><div class=\"kbd\" style=\"overflow:auto\">${typeof v==='object'? `<pre style='margin:0'>${JSON.stringify(v,null,2)}</pre>`: String(v)}</div></div>`).join('')}</div>`;
-      }
-      modal.showModal();
-    }
-
-    async function fetchDONKI(start, end, key){
-      const s = start.toISOString().slice(0,10);
-      const e = end.toISOString().slice(0,10);
-      const params = (u)=> u + (u.includes('?')?'&':'?') + new URLSearchParams({ startDate:s, endDate:e, api_key:key }).toString();
-
-      const urls = [
-        'https://api.nasa.gov/DONKI/FLR',           // Solar flares
-        'https://api.nasa.gov/DONKI/CME',           // Coronal Mass Ejections
-        'https://api.nasa.gov/DONKI/WSAEnlilSimulations', // WSA-Enlil simulations
-        'https://api.nasa.gov/DONKI/HSS',           // High Speed Streams
-        'https://api.nasa.gov/DONKI/GST',           // Geomagnetic Storms (Kp)
-        'https://api.nasa.gov/DONKI/RBE',           // Radio Blackout
-        'https://api.nasa.gov/DONKI/SEP',           // Solar Energetic Particles
-        'https://api.nasa.gov/DONKI/notifications'  // Text notifications
-      ].map(params);
-
-      const results = await Promise.allSettled(urls.map(u=>fetch(u).then(r=>r.ok?r.json():[])));
-      const items = [];
-      for(const r of results){ if(r.status==='fulfilled' && Array.isArray(r.value)) items.push(...r.value); }
-      return items;
-    }
-
-    // initial render
-    renderCalendar();
-  </script>
+/* ---------- Init ---------- */
+(function init(){
+  syncYear();
+  renderCalendar();
+})();
+</script>
 </body>
 </html>
